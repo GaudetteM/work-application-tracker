@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+
 import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 
 import { ApplicationsScreen } from './src/screens/ApplicationsScreen';
@@ -14,11 +15,17 @@ function App(): React.JSX.Element {
     switch (screen) {
       case 'applications':
         return <ApplicationsScreen />;
+
       case 'settings':
         return <SettingsScreen />;
+
       case 'dashboard':
       default:
-        return <DashboardScreen />;
+        return (
+          <DashboardScreen
+            onViewApplications={() => setScreen('applications')}
+          />
+        );
     }
   };
 
@@ -88,10 +95,10 @@ const styles = StyleSheet.create({
   },
 
   logo: {
+    marginBottom: 32,
     fontSize: 17,
     fontWeight: '700',
     color: '#171717',
-    marginBottom: 32,
   },
 
   nav: {

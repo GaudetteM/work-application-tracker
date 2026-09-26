@@ -9,14 +9,13 @@ export type ApplicationStatus =
   | 'withdrawn'
   | 'closed';
 
-export type JobApplication = {
+export interface JobApplication {
   id: string;
   title: string;
   company: string;
   employmentType: EmploymentType;
   location?: string;
-  salaryMin?: number;
-  salaryMax?: number;
+  salary?: string;
   listingUrl?: string;
   listingSource: string;
   applicationSource: string;
@@ -25,4 +24,12 @@ export type JobApplication = {
   notes?: string;
   createdAt: string;
   updatedAt: string;
-};
+}
+
+export interface ApplicationEvent {
+  id: string;
+  applicationId: string;
+  status: ApplicationStatus;
+  createdAt: string;
+  note?: string;
+}
