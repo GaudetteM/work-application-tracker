@@ -1,5 +1,4 @@
 import React from 'react';
-
 import { StyleSheet, Text, View } from 'react-native';
 import { EmploymentType } from '../types';
 import { useTheme } from '../theme/ThemeProvider';

@@ -1,11 +1,9 @@
 import React from 'react';
-
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-
 import { useTheme } from '../theme/ThemeProvider';
 import type { JobApplication } from '../types';
-
 import { EmploymentBadge } from './EmploymentBadge';
+import { useDateFormatter } from '../utils/useDateFormatter';
 
 type ApplicationRowProps = {
   application: JobApplication;
@@ -20,6 +18,7 @@ export function ApplicationRow({
   index,
 }: ApplicationRowProps) {
   const { theme } = useTheme();
+  const { formatDate } = useDateFormatter();
 
   return (
     <Pressable
@@ -113,7 +112,7 @@ export function ApplicationRow({
               },
             ]}
           >
-            {new Date(application.appliedAt).toLocaleDateString()}
+            {application.appliedAt ? formatDate(application.appliedAt) : 'N/A'}
           </Text>
         </View>
       </View>
@@ -158,6 +157,9 @@ export function ApplicationRow({
 
 function formatStatus(status: JobApplication['status']) {
   switch (status) {
+    case 'interested':
+      return 'Interested';
+
     case 'recruiter_contact':
       return 'Recruiter Contact';
 

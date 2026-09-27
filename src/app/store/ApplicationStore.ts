@@ -14,7 +14,12 @@ type ApplicationStore = {
 
   addApplication: (application: JobApplication) => void;
   updateApplication: (application: JobApplication) => void;
+  saveApplication: (
+    application: JobApplication,
+    previousStatus: ApplicationStatus,
+  ) => void;
   changeStatus: (applicationId: string, status: ApplicationStatus) => void;
+  deleteApplication: (applicationId: string) => void;
 };
 
 export const useApplicationStore = create<ApplicationStore>()(
@@ -33,7 +38,7 @@ export const useApplicationStore = create<ApplicationStore>()(
               id: `${Date.now()}-event`,
               applicationId: application.id,
               status: application.status,
-              createdAt: application.appliedAt,
+              createdAt: application.appliedAt ?? '',
             },
           ],
         })),
@@ -71,6 +76,43 @@ export const useApplicationStore = create<ApplicationStore>()(
             ],
           };
         }),
+      saveApplication: (application, previousStatus) =>
+        set(state => {
+          const statusChanged = application.status !== previousStatus;
+          const now = new Date().toISOString();
+
+          return {
+            applications: state.applications.map(item =>
+              item.id === application.id
+                ? {
+                    ...application,
+                    updatedAt: now,
+                  }
+                : item,
+            ),
+            events: statusChanged
+              ? [
+                  ...state.events,
+                  {
+                    id: `${Date.now()}-event`,
+                    applicationId: application.id,
+                    status: application.status,
+                    createdAt: now,
+                  },
+                ]
+              : state.events,
+          };
+        }),
+
+      deleteApplication: applicationId =>
+        set(state => ({
+          applications: state.applications.filter(
+            application => application.id !== applicationId,
+          ),
+          events: state.events.filter(
+            event => event.applicationId !== applicationId,
+          ),
+        })),
     }),
     {
       name: 'work-application-tracker',

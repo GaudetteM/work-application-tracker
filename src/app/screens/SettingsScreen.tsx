@@ -1,16 +1,9 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSettings } from '../settings/SettingsProvider';
 import { useTheme } from '../theme/ThemeProvider';
 import { Theme } from '../theme/theme';
-
-type OptionButtonProps = {
-  label: string;
-  description?: string;
-  selected: boolean;
-  onPress: () => void;
-  theme: Theme;
-};
+import { OptionButton } from '../components';
 
 export function SettingsScreen() {
   const { theme, mode, setMode } = useTheme();
@@ -25,6 +18,19 @@ export function SettingsScreen() {
   } = useSettings();
 
   const styles = createStyles(theme);
+
+  const getSystemName = () => {
+    switch (Platform.OS) {
+      case 'ios':
+        return 'iOS';
+      case 'macos':
+        return 'macOS';
+      case 'android':
+        return 'Android';
+      default:
+        return 'system';
+    }
+  };
 
   return (
     <ScrollView
@@ -50,24 +56,21 @@ export function SettingsScreen() {
         <View style={styles.optionGroup}>
           <OptionButton
             label="System"
-            description="Follow macOS appearance"
+            description={`Follow ${getSystemName()} appearance`}
             selected={mode === 'system'}
             onPress={() => setMode('system')}
-            theme={theme}
           />
 
           <OptionButton
             label="Light"
             selected={mode === 'light'}
             onPress={() => setMode('light')}
-            theme={theme}
           />
 
           <OptionButton
             label="Dark"
             selected={mode === 'dark'}
             onPress={() => setMode('dark')}
-            theme={theme}
           />
         </View>
       </View>
@@ -81,27 +84,10 @@ export function SettingsScreen() {
 
         <View style={styles.optionGroup}>
           <OptionButton
-            label="Sep 26, 2026"
-            description="US readable"
-            selected={dateFormat === 'month_day_year'}
-            onPress={() => setDateFormat('month_day_year')}
-            theme={theme}
-          />
-
-          <OptionButton
-            label="26 Sep 2026"
-            description="International readable"
-            selected={dateFormat === 'day_month_year'}
-            onPress={() => setDateFormat('day_month_year')}
-            theme={theme}
-          />
-
-          <OptionButton
             label="09/26/2026"
             description="US numeric"
             selected={dateFormat === 'numeric_us'}
             onPress={() => setDateFormat('numeric_us')}
-            theme={theme}
           />
 
           <OptionButton
@@ -109,7 +95,6 @@ export function SettingsScreen() {
             description="International numeric"
             selected={dateFormat === 'numeric_international'}
             onPress={() => setDateFormat('numeric_international')}
-            theme={theme}
           />
         </View>
       </View>
@@ -127,7 +112,6 @@ export function SettingsScreen() {
             description="2:30 PM"
             selected={timeFormat === '12h'}
             onPress={() => setTimeFormat('12h')}
-            theme={theme}
           />
 
           <OptionButton
@@ -135,7 +119,6 @@ export function SettingsScreen() {
             description="14:30"
             selected={timeFormat === '24h'}
             onPress={() => setTimeFormat('24h')}
-            theme={theme}
           />
         </View>
       </View>
@@ -152,51 +135,16 @@ export function SettingsScreen() {
             label="Sunday"
             selected={weekStart === 'sunday'}
             onPress={() => setWeekStart('sunday')}
-            theme={theme}
           />
 
           <OptionButton
             label="Monday"
             selected={weekStart === 'monday'}
             onPress={() => setWeekStart('monday')}
-            theme={theme}
           />
         </View>
       </View>
     </ScrollView>
-  );
-}
-
-function OptionButton({
-  label,
-  description,
-  selected,
-  onPress,
-  theme,
-}: OptionButtonProps) {
-  const styles = createOptionStyles(theme);
-
-  return (
-    <Pressable
-      onPress={onPress}
-      style={[styles.option, selected && styles.optionSelected]}
-    >
-      <View style={styles.optionContent}>
-        <Text
-          style={[styles.optionLabel, selected && styles.optionLabelSelected]}
-        >
-          {label}
-        </Text>
-
-        {description && (
-          <Text style={styles.optionDescription}>{description}</Text>
-        )}
-      </View>
-
-      <View style={[styles.radio, selected && styles.radioSelected]}>
-        {selected && <View style={styles.radioDot} />}
-      </View>
-    </Pressable>
   );
 }
 
@@ -246,63 +194,6 @@ function createStyles(theme: Theme) {
     },
     optionGroup: {
       gap: 8,
-    },
-  });
-}
-
-function createOptionStyles(theme: Theme) {
-  return StyleSheet.create({
-    option: {
-      minHeight: 52,
-      paddingHorizontal: 14,
-      paddingVertical: 10,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      borderWidth: 1,
-      borderColor: theme.border,
-      borderRadius: 8,
-      backgroundColor: theme.surface,
-    },
-    optionSelected: {
-      borderColor: theme.borderStrong,
-      backgroundColor: theme.surfaceSecondary,
-    },
-    optionContent: {
-      flex: 1,
-    },
-    optionLabel: {
-      fontSize: 14,
-      fontWeight: '500',
-      color: theme.textSecondary,
-    },
-    optionLabelSelected: {
-      fontWeight: '600',
-      color: theme.text,
-    },
-    optionDescription: {
-      marginTop: 2,
-      fontSize: 12,
-      color: theme.textMuted,
-    },
-    radio: {
-      width: 18,
-      height: 18,
-      marginLeft: 16,
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderWidth: 1,
-      borderColor: theme.borderStrong,
-      borderRadius: 9,
-    },
-    radioSelected: {
-      borderColor: theme.text,
-    },
-    radioDot: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      backgroundColor: theme.text,
     },
   });
 }

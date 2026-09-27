@@ -21,11 +21,11 @@ export function ApplicationsScreen() {
 
   const addApplication = useApplicationStore(state => state.addApplication);
 
-  const updateApplication = useApplicationStore(
-    state => state.updateApplication,
-  );
+  const saveApplication = useApplicationStore(state => state.saveApplication);
 
-  const changeStatus = useApplicationStore(state => state.changeStatus);
+  const deleteApplication = useApplicationStore(
+    state => state.deleteApplication,
+  );
 
   const [searchQuery, setSearchQuery] = useState('');
   const [showAdd, setShowAdd] = useState(false);
@@ -88,19 +88,23 @@ export function ApplicationsScreen() {
       </View>
 
       <View style={styles.searchContainer}>
-        <TextInput
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder="Search applications..."
-          placeholderTextColor="#999994"
-          style={[
-            styles.searchInput,
-            {
-              color: theme.text,
-              borderColor: theme.text,
-            },
-          ]}
-        />
+        <View style={styles.searchContainer}>
+          <TextInput
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Search applications..."
+            placeholderTextColor={theme.textMuted}
+            editable={!showAdd && !selectedApplication}
+            style={[
+              styles.searchInput,
+              {
+                color: theme.text,
+                borderColor: theme.border,
+                backgroundColor: theme.inputBackground,
+              },
+            ]}
+          />
+        </View>
       </View>
 
       <View
@@ -147,10 +151,13 @@ export function ApplicationsScreen() {
         <ApplicationDetailsModal
           application={selected}
           events={events.filter(event => event.applicationId === selected.id)}
-          onClose={() => setSelectedApplication(null)}
-          onSave={updateApplication}
-          onStatusChange={status => {
-            changeStatus(selected.id, status);
+          onSave={application => {
+            saveApplication(application, selected.status);
+            setSelectedApplication(null);
+          }}
+          onDelete={() => {
+            deleteApplication(selected.id);
+            setSelectedApplication(null);
           }}
         />
       )}
@@ -202,25 +209,21 @@ const styles = StyleSheet.create({
   },
 
   searchContainer: {
-    paddingHorizontal: 28,
+    paddingHorizontal: 8,
     paddingBottom: 18,
   },
 
   searchInput: {
-    height: 40,
     paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: '#D9D9D5',
+    paddingVertical: 8,
     borderRadius: 8,
-    backgroundColor: '#FFFFFF',
-    color: '#181816',
-    fontSize: 14,
+    fontSize: 18,
   },
 
   listContainer: {
     flex: 1,
-    marginHorizontal: 28,
-    marginBottom: 28,
+    marginHorizontal: 14,
+    marginBottom: 14,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#E3E3E0',

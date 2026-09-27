@@ -1,7 +1,5 @@
 import React from 'react';
-
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-
 import { useTheme } from '../theme/ThemeProvider';
 import { useApplicationStore } from '../store/ApplicationStore';
 import type { ApplicationStatus, JobApplication } from '../types';
@@ -30,16 +28,33 @@ export function DashboardScreen({ onViewApplications }: DashboardScreenProps) {
 
   const startOfWeek = getStartOfWeek(now, weekStart);
 
-  const applicationsThisWeek = applications.filter(
-    application => new Date(application.appliedAt) >= startOfWeek,
-  );
+  console.log('now:', now.toISOString());
+  console.log('weekStart setting:', weekStart);
+  console.log('startOfWeek:', startOfWeek.toISOString());
 
+  applications.forEach(application => {
+    const appliedAt = application.appliedAt
+      ? new Date(application.appliedAt)
+      : null;
+
+    console.log({
+      title: application.title,
+      appliedAt: application.appliedAt,
+      parsedAppliedAt: appliedAt ? appliedAt.toISOString() : null,
+      isThisWeek: appliedAt ? appliedAt >= startOfWeek : false,
+    });
+  });
+  const applicationsThisWeek = applications.filter(
+    application =>
+      application.appliedAt && new Date(application.appliedAt) >= startOfWeek,
+  );
   const weeklyProgress = Math.min(applicationsThisWeek.length / WEEKLY_GOAL, 1);
 
   const recentApplications = [...applications]
     .sort(
       (a, b) =>
-        new Date(b.appliedAt).getTime() - new Date(a.appliedAt).getTime(),
+        (b.appliedAt ? new Date(b.appliedAt).getTime() : 0) -
+        (a.appliedAt ? new Date(a.appliedAt).getTime() : 0),
     )
     .slice(0, 5);
 
@@ -120,7 +135,7 @@ export function DashboardScreen({ onViewApplications }: DashboardScreenProps) {
                 },
               ]}
             >
-              THIS WEEK
+              CURRENT WEEK
             </Text>
 
             <Text
@@ -538,6 +553,8 @@ export function DashboardScreen({ onViewApplications }: DashboardScreenProps) {
                 </Text>
               </View>
 
+              <StatusRow label="Interested" count={statusCounts.interested} />
+
               <StatusRow label="Applied" count={statusCounts.applied} />
 
               <StatusRow
@@ -568,6 +585,7 @@ function getStatusCounts(
     {
       applied: 0,
       recruiter_contact: 0,
+      interested: 0,
       interview: 0,
       offer: 0,
       rejected: 0,
@@ -579,6 +597,9 @@ function getStatusCounts(
 
 function formatStatus(status: ApplicationStatus) {
   switch (status) {
+    case 'interested':
+      return 'Interested';
+
     case 'recruiter_contact':
       return 'Recruiter Contact';
 

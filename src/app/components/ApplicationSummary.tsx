@@ -59,7 +59,7 @@ export function ApplicationSummary({
             },
           ]}
         >
-          {formatDate(application.appliedAt)}
+          {application.appliedAt ? formatDate(application.appliedAt) : 'N/A'}
         </Text>
       </View>
     </View>

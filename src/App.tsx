@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-
-import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ApplicationsScreen } from './app/screens/ApplicationsScreen';
 import { DashboardScreen } from './app/screens/DashboardScreen';
 import { SettingsScreen } from './app/screens/SettingsScreen';
@@ -121,8 +120,8 @@ function NavItem({ label, active, onPress }: NavItemProps) {
           styles.navText,
           {
             color: active ? theme.text : theme.textSecondary,
-            fontWeight: active ? '600' : '400',
           },
+          active ? styles.navTextActive : styles.navTextInactive,
         ]}
       >
         {label}
@@ -161,6 +160,14 @@ const styles = StyleSheet.create({
 
   navText: {
     fontSize: 14,
+  },
+
+  navTextActive: {
+    fontWeight: '600',
+  },
+
+  navTextInactive: {
+    fontWeight: '400',
   },
 
   content: {

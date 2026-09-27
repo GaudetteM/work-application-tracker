@@ -2,6 +2,9 @@ import type { ApplicationStatus, JobApplication } from '../types';
 
 export function formatStatus(status: ApplicationStatus): string {
   switch (status) {
+    case 'interested':
+      return 'Interested';
+
     case 'recruiter_contact':
       return 'Recruiter Contact';
 
@@ -37,6 +40,7 @@ export function getStatusCounts(
     {
       applied: 0,
       recruiter_contact: 0,
+      interested: 0,
       interview: 0,
       offer: 0,
       rejected: 0,

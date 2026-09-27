@@ -47,6 +47,9 @@ export function AddApplicationModal({
 
   const save = (): void => {
     const now = new Date().toISOString();
+
+    console.log('SAVE LOCAL:', new Date(now).toString());
+    console.log('SAVE UTC:', now);
     onSave({
       id: Date.now().toString(),
       title: title.trim() === '' ? 'Senior Software Engineer' : title.trim(),

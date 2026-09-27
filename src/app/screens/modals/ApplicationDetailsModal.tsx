@@ -7,27 +7,24 @@ import {
   TextInput,
   View,
 } from 'react-native';
-
 import type {
   ApplicationEvent,
   ApplicationStatus,
-  EmploymentType,
   JobApplication,
 } from '../../types';
-import { EmploymentTypeButton } from '../../components';
 
 type ApplicationDetailsModalProps = {
   application: JobApplication;
   events: ApplicationEvent[];
-  onClose: () => void;
   onSave: (application: JobApplication) => void;
-  onStatusChange: (status: ApplicationStatus) => void;
+  onDelete: () => void;
 };
 
 const STATUS_OPTIONS: {
   value: ApplicationStatus;
   label: string;
 }[] = [
+  { value: 'interested', label: 'Interested' },
   { value: 'applied', label: 'Applied' },
   {
     value: 'recruiter_contact',
@@ -40,42 +37,61 @@ const STATUS_OPTIONS: {
   { value: 'closed', label: 'Closed' },
 ];
 
+type EditingField = 'title' | 'company' | 'location' | 'salary' | null;
+
 export function ApplicationDetailsModal({
   application,
   events,
-  onClose,
   onSave,
-  onStatusChange,
+  onDelete,
 }: ApplicationDetailsModalProps) {
-  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<JobApplication>(application);
+  const [editingField, setEditingField] = useState<EditingField>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const [title, setTitle] = useState(application.title);
-  const [company, setCompany] = useState(application.company);
-  const [location, setLocation] = useState(application.location ?? '');
-  const [salary, setSalary] = useState(application.salary ?? '');
-  const [employmentType, setEmploymentType] = useState<EmploymentType>(
-    application.employmentType,
-  );
-  const [notes, setNotes] = useState(application.notes ?? '');
+  const updateDraft = <K extends keyof JobApplication>(
+    field: K,
+    value: JobApplication[K],
+  ) => {
+    setDraft(current => ({
+      ...current,
+      [field]: value,
+    }));
+  };
 
-  const save = () => {
-    if (!title.trim() || !company.trim()) {
+  const finishEditingField = () => {
+    if (editingField === 'title' && !draft.title.trim()) {
       return;
     }
 
-    const updatedApplication: JobApplication = {
-      ...application,
-      title: title.trim(),
-      company: company.trim(),
-      location: location.trim() || undefined,
-      salary: salary.trim() || undefined,
-      employmentType,
-      notes: notes.trim() || undefined,
-      updatedAt: new Date().toISOString(),
-    };
+    if (editingField === 'company' && !draft.company.trim()) {
+      return;
+    }
 
-    onSave(updatedApplication);
-    setEditing(false);
+    setDraft(current => ({
+      ...current,
+      title: current.title.trim(),
+      company: current.company.trim(),
+      location: current.location?.trim() || undefined,
+      salary: current.salary?.trim() || undefined,
+    }));
+
+    setEditingField(null);
+  };
+
+  const handleClose = () => {
+    if (!draft.title.trim() || !draft.company.trim()) {
+      return;
+    }
+
+    onSave({
+      ...draft,
+      title: draft.title.trim(),
+      company: draft.company.trim(),
+      location: draft.location?.trim() || undefined,
+      salary: draft.salary?.trim() || undefined,
+      notes: draft.notes?.trim() || undefined,
+    });
   };
 
   return (
@@ -85,12 +101,12 @@ export function ApplicationDetailsModal({
           <View style={styles.headerText}>
             <Text style={styles.eyebrow}>APPLICATION</Text>
 
-            <Text style={styles.title}>{application.title}</Text>
+            <Text style={styles.title}>{draft.title}</Text>
 
-            <Text style={styles.company}>{application.company}</Text>
+            <Text style={styles.company}>{draft.company}</Text>
           </View>
 
-          <Pressable onPress={onClose} style={styles.closeButton}>
+          <Pressable onPress={handleClose} style={styles.closeButton}>
             <Text style={styles.closeButtonText}>×</Text>
           </Pressable>
         </View>
@@ -100,258 +116,292 @@ export function ApplicationDetailsModal({
           contentContainerStyle={styles.contentContainer}
           showsVerticalScrollIndicator={false}
         >
-          {editing ? (
-            <>
-              <View style={styles.field}>
-                <Text style={styles.label}>Title</Text>
+          <View style={styles.statusSection}>
+            <Text style={styles.sectionTitle}>Status</Text>
 
-                <TextInput
-                  value={title}
-                  onChangeText={setTitle}
-                  style={styles.input}
-                  placeholder="Job title"
-                  placeholderTextColor="#999994"
-                />
-              </View>
-
-              <View style={styles.field}>
-                <Text style={styles.label}>Company</Text>
-
-                <TextInput
-                  value={company}
-                  onChangeText={setCompany}
-                  style={styles.input}
-                  placeholder="Company"
-                  placeholderTextColor="#999994"
-                />
-              </View>
-
-              <View style={styles.field}>
-                <Text style={styles.label}>Location</Text>
-
-                <TextInput
-                  value={location}
-                  onChangeText={setLocation}
-                  style={styles.input}
-                  placeholder="Remote, Minneapolis, etc."
-                  placeholderTextColor="#999994"
-                />
-              </View>
-
-              <View style={styles.field}>
-                <Text style={styles.label}>Salary</Text>
-
-                <TextInput
-                  value={salary}
-                  onChangeText={setSalary}
-                  style={styles.input}
-                  placeholder="$120k–$145k"
-                  placeholderTextColor="#999994"
-                />
-              </View>
-
-              <View style={styles.field}>
-                <Text style={styles.label}>Employment Type</Text>
-
-                <View style={styles.employmentOptions}>
-                  <EmploymentTypeButton
-                    label="Full-time"
-                    selected={employmentType === 'full_time'}
-                    onPress={() => setEmploymentType('full_time')}
-                  />
-
-                  <EmploymentTypeButton
-                    label="Contract"
-                    selected={employmentType === 'contract'}
-                    onPress={() => setEmploymentType('contract')}
-                  />
-
-                  <EmploymentTypeButton
-                    label="Part-time"
-                    selected={employmentType === 'part_time'}
-                    onPress={() => setEmploymentType('part_time')}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.field}>
-                <Text style={styles.label}>Notes</Text>
-
-                <TextInput
-                  value={notes}
-                  onChangeText={setNotes}
-                  style={[styles.input, styles.notesInput]}
-                  placeholder="Company research, impressions, etc."
-                  placeholderTextColor="#999994"
-                  multiline
-                  textAlignVertical="top"
-                />
-              </View>
-
-              <View style={styles.actions}>
+            <View style={styles.statusOptions}>
+              {STATUS_OPTIONS.map(option => (
                 <Pressable
-                  onPress={() => setEditing(false)}
+                  key={option.value}
+                  onPress={() => updateDraft('status', option.value)}
+                  style={[
+                    styles.statusOption,
+                    option.value === draft.status &&
+                      styles.statusOptionSelected,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.statusOptionText,
+                      option.value === draft.status &&
+                        styles.statusOptionTextSelected,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.detailsSection}>
+            <Text style={styles.sectionTitle}>Details</Text>
+
+            <EditableRow
+              label="Title"
+              value={draft.title}
+              editing={editingField === 'title'}
+              onPress={() => setEditingField('title')}
+              onChangeText={value => updateDraft('title', value)}
+              onDone={finishEditingField}
+            />
+
+            <EditableRow
+              label="Company"
+              value={draft.company}
+              editing={editingField === 'company'}
+              onPress={() => setEditingField('company')}
+              onChangeText={value => updateDraft('company', value)}
+              onDone={finishEditingField}
+            />
+
+            <EditableRow
+              label="Location"
+              value={draft.location}
+              placeholder="Not specified"
+              editing={editingField === 'location'}
+              onPress={() => setEditingField('location')}
+              onChangeText={value => updateDraft('location', value)}
+              onDone={finishEditingField}
+            />
+
+            <EditableRow
+              label="Salary"
+              value={draft.salary}
+              placeholder="Not specified"
+              editing={editingField === 'salary'}
+              onPress={() => setEditingField('salary')}
+              onChangeText={value => updateDraft('salary', value)}
+              onDone={finishEditingField}
+            />
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Employment</Text>
+
+              <View style={styles.employmentOptions}>
+                <EmploymentButton
+                  label="Full-time"
+                  selected={draft.employmentType === 'full_time'}
+                  onPress={() => updateDraft('employmentType', 'full_time')}
+                />
+
+                <EmploymentButton
+                  label="Contract"
+                  selected={draft.employmentType === 'contract'}
+                  onPress={() => updateDraft('employmentType', 'contract')}
+                />
+
+                <EmploymentButton
+                  label="Part-time"
+                  selected={draft.employmentType === 'part_time'}
+                  onPress={() => updateDraft('employmentType', 'part_time')}
+                />
+              </View>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Found via</Text>
+
+              <Text style={styles.detailValue}>{draft.listingSource}</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Applied through</Text>
+
+              <Text style={styles.detailValue}>{draft.applicationSource}</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Applied</Text>
+
+              <Text style={styles.detailValue}>
+                {draft.appliedAt
+                  ? new Date(draft.appliedAt).toLocaleDateString()
+                  : 'N/A'}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.notesSection}>
+            <Text style={styles.sectionTitle}>Notes</Text>
+
+            <TextInput
+              value={draft.notes ?? ''}
+              onChangeText={value => updateDraft('notes', value)}
+              style={styles.notesInput}
+              placeholder="Company research, impressions, interview notes..."
+              placeholderTextColor="#999994"
+              multiline
+              textAlignVertical="top"
+            />
+          </View>
+
+          <View style={styles.timelineSection}>
+            <Text style={styles.sectionTitle}>Activity</Text>
+
+            <View style={styles.timeline}>
+              {[...events]
+                .sort(
+                  (a, b) =>
+                    new Date(b.createdAt).getTime() -
+                    new Date(a.createdAt).getTime(),
+                )
+                .map((event, index, sortedEvents) => (
+                  <View key={event.id} style={styles.timelineItem}>
+                    <View style={styles.timelineMarker}>
+                      <View style={styles.timelineDot} />
+
+                      {index < sortedEvents.length - 1 && (
+                        <View style={styles.timelineLine} />
+                      )}
+                    </View>
+
+                    <View style={styles.timelineContent}>
+                      <Text style={styles.timelineStatus}>
+                        {formatStatus(event.status)}
+                      </Text>
+
+                      <Text style={styles.timelineDate}>
+                        {new Date(event.createdAt).toLocaleDateString()}
+                      </Text>
+
+                      {event.note && (
+                        <Text style={styles.timelineNote}>{event.note}</Text>
+                      )}
+                    </View>
+                  </View>
+                ))}
+            </View>
+          </View>
+
+          {confirmDelete ? (
+            <View style={styles.deleteConfirmation}>
+              <Text style={styles.deleteTitle}>Delete this application?</Text>
+
+              <Text style={styles.deleteText}>
+                This will permanently remove the application and its activity
+                history.
+              </Text>
+
+              <View style={styles.deleteActions}>
+                <Pressable
+                  onPress={() => setConfirmDelete(false)}
                   style={styles.secondaryButton}
                 >
                   <Text style={styles.secondaryButtonText}>Cancel</Text>
                 </Pressable>
 
-                <Pressable onPress={save} style={styles.primaryButton}>
-                  <Text style={styles.primaryButtonText}>Save Changes</Text>
+                <Pressable onPress={onDelete} style={styles.deleteButton}>
+                  <Text style={styles.deleteButtonText}>Delete</Text>
                 </Pressable>
               </View>
-            </>
+            </View>
           ) : (
-            <>
-              <View style={styles.detailsSection}>
-                <Text style={styles.sectionTitle}>Details</Text>
-
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Location</Text>
-
-                  <Text style={styles.detailValue}>
-                    {application.location || 'Not specified'}
-                  </Text>
-                </View>
-
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Salary</Text>
-
-                  <Text style={styles.detailValue}>
-                    {application.salary || 'Not specified'}
-                  </Text>
-                </View>
-
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Employment</Text>
-
-                  <Text style={styles.detailValue}>
-                    {formatEmploymentType(application.employmentType)}
-                  </Text>
-                </View>
-
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Found via</Text>
-
-                  <Text style={styles.detailValue}>
-                    {application.listingSource}
-                  </Text>
-                </View>
-
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Applied through</Text>
-
-                  <Text style={styles.detailValue}>
-                    {application.applicationSource}
-                  </Text>
-                </View>
-
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Applied</Text>
-
-                  <Text style={styles.detailValue}>
-                    {new Date(application.appliedAt).toLocaleDateString()}
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.statusSection}>
-                <Text style={styles.sectionTitle}>Status</Text>
-
-                <View style={styles.statusOptions}>
-                  {STATUS_OPTIONS.map(status => (
-                    <Pressable
-                      key={status.value}
-                      onPress={() => {
-                        if (status.value !== application.status) {
-                          onStatusChange(status.value);
-                        }
-                      }}
-                      style={[
-                        styles.statusOption,
-                        status.value === application.status &&
-                          styles.statusOptionSelected,
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.statusOptionText,
-                          status.value === application.status &&
-                            styles.statusOptionTextSelected,
-                        ]}
-                      >
-                        {status.label}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
-              </View>
-
-              {application.notes && (
-                <View style={styles.notesSection}>
-                  <Text style={styles.sectionTitle}>Notes</Text>
-
-                  <Text style={styles.notesText}>{application.notes}</Text>
-                </View>
-              )}
-
-              <View style={styles.timelineSection}>
-                <Text style={styles.sectionTitle}>Activity</Text>
-
-                <View style={styles.timeline}>
-                  {[...events]
-                    .sort(
-                      (a, b) =>
-                        new Date(b.createdAt).getTime() -
-                        new Date(a.createdAt).getTime(),
-                    )
-                    .map((event, index, sortedEvents) => (
-                      <View key={event.id} style={styles.timelineItem}>
-                        <View style={styles.timelineMarker}>
-                          <View style={styles.timelineDot} />
-
-                          {index < sortedEvents.length - 1 && (
-                            <View style={styles.timelineLine} />
-                          )}
-                        </View>
-
-                        <View style={styles.timelineContent}>
-                          <Text style={styles.timelineStatus}>
-                            {formatStatus(event.status)}
-                          </Text>
-
-                          <Text style={styles.timelineDate}>
-                            {new Date(event.createdAt).toLocaleDateString()}
-                          </Text>
-
-                          {event.note && (
-                            <Text style={styles.timelineNote}>
-                              {event.note}
-                            </Text>
-                          )}
-                        </View>
-                      </View>
-                    ))}
-                </View>
-              </View>
-
-              <View style={styles.actions}>
-                <Pressable
-                  onPress={() => setEditing(true)}
-                  style={styles.secondaryButton}
-                >
-                  <Text style={styles.secondaryButtonText}>Edit</Text>
-                </Pressable>
-
-                <Pressable onPress={onClose} style={styles.primaryButton}>
-                  <Text style={styles.primaryButtonText}>Close</Text>
-                </Pressable>
-              </View>
-            </>
+            <Pressable
+              onPress={() => setConfirmDelete(true)}
+              style={styles.deleteLink}
+            >
+              <Text style={styles.deleteLinkText}>Delete Application</Text>
+            </Pressable>
           )}
+
+          <View style={styles.actions}>
+            <Pressable onPress={handleClose} style={styles.primaryButton}>
+              <Text style={styles.primaryButtonText}>Close</Text>
+            </Pressable>
+          </View>
         </ScrollView>
       </View>
     </View>
+  );
+}
+
+type EditableRowProps = {
+  label: string;
+  value?: string;
+  placeholder?: string;
+  editing: boolean;
+  onPress: () => void;
+  onChangeText: (value: string) => void;
+  onDone: () => void;
+};
+
+function EditableRow({
+  label,
+  value,
+  placeholder = 'Not specified',
+  editing,
+  onPress,
+  onChangeText,
+  onDone,
+}: EditableRowProps) {
+  return (
+    <View style={styles.detailRow}>
+      <Text style={styles.detailLabel}>{label}</Text>
+
+      {editing ? (
+        <View style={styles.inlineEdit}>
+          <TextInput
+            autoFocus
+            value={value ?? ''}
+            onChangeText={onChangeText}
+            style={styles.inlineInput}
+            placeholder={placeholder}
+            placeholderTextColor="#999994"
+            onSubmitEditing={onDone}
+          />
+
+          <Pressable onPress={onDone} style={styles.inlineDoneButton}>
+            <Text style={styles.inlineDoneText}>✓</Text>
+          </Pressable>
+        </View>
+      ) : (
+        <Pressable onPress={onPress} style={styles.editableValue}>
+          <Text style={[styles.detailValue, !value && styles.placeholderValue]}>
+            {value || placeholder}
+          </Text>
+
+          <Text style={styles.editIndicator}>›</Text>
+        </Pressable>
+      )}
+    </View>
+  );
+}
+
+type EmploymentButtonProps = {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+};
+
+function EmploymentButton({ label, selected, onPress }: EmploymentButtonProps) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={[
+        styles.employmentButton,
+        selected && styles.employmentButtonSelected,
+      ]}
+    >
+      <Text
+        style={[
+          styles.employmentButtonText,
+          selected && styles.employmentButtonTextSelected,
+        ]}
+      >
+        {label}
+      </Text>
+    </Pressable>
   );
 }
 
@@ -378,20 +428,6 @@ function formatStatus(status: ApplicationStatus) {
     case 'applied':
     default:
       return 'Applied';
-  }
-}
-
-function formatEmploymentType(type: EmploymentType) {
-  switch (type) {
-    case 'contract':
-      return 'Contract';
-
-    case 'part_time':
-      return 'Part-time';
-
-    case 'full_time':
-    default:
-      return 'Full-time';
   }
 }
 
@@ -485,42 +521,6 @@ const styles = StyleSheet.create({
     padding: 24,
   },
 
-  field: {
-    marginBottom: 18,
-  },
-
-  label: {
-    marginBottom: 7,
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#555550',
-  },
-
-  input: {
-    height: 40,
-    paddingHorizontal: 11,
-    borderWidth: 1,
-    borderColor: '#D9D9D5',
-    borderRadius: 8,
-    backgroundColor: '#FFFFFF',
-    color: '#181816',
-    fontSize: 14,
-  },
-
-  notesInput: {
-    height: 120,
-    paddingTop: 10,
-  },
-
-  employmentOptions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-
-  detailsSection: {
-    marginBottom: 20,
-  },
-
   sectionTitle: {
     marginBottom: 12,
     fontSize: 12,
@@ -529,29 +529,8 @@ const styles = StyleSheet.create({
     color: '#555550',
   },
 
-  detailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    minHeight: 34,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E8E8E4',
-  },
-
-  detailLabel: {
-    fontSize: 12,
-    color: '#8A8A84',
-  },
-
-  detailValue: {
-    maxWidth: '65%',
-    fontSize: 13,
-    color: '#252522',
-    textAlign: 'right',
-  },
-
   statusSection: {
-    marginTop: 20,
+    marginBottom: 24,
   },
 
   statusOptions: {
@@ -584,21 +563,136 @@ const styles = StyleSheet.create({
     color: '#181816',
   },
 
+  detailsSection: {
+    marginBottom: 24,
+  },
+
+  detailRow: {
+    minHeight: 42,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E8E8E4',
+  },
+
+  detailLabel: {
+    flexShrink: 0,
+    fontSize: 12,
+    color: '#8A8A84',
+  },
+
+  detailValue: {
+    flex: 1,
+    fontSize: 14,
+    color: '#181816',
+    textAlign: 'right',
+  },
+
+  placeholderValue: {
+    color: '#A0A09A',
+  },
+
+  editableValue: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 8,
+    maxWidth: '70%',
+    paddingVertical: 6,
+    paddingLeft: 12,
+  },
+
+  editIndicator: {
+    marginLeft: 12,
+    fontSize: 18,
+    color: '#A0A09A',
+  },
+
+  inlineEdit: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    maxWidth: '70%',
+    gap: 6,
+  },
+
+  inlineInput: {
+    width: 260,
+    height: 34,
+    paddingHorizontal: 9,
+    borderWidth: 1,
+    borderColor: '#BDBDB7',
+    borderRadius: 7,
+    backgroundColor: '#FFFFFF',
+    color: '#181816',
+    fontSize: 13,
+  },
+
+  inlineDoneButton: {
+    width: 30,
+    height: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 6,
+    backgroundColor: '#181816',
+  },
+
+  inlineDoneText: {
+    fontSize: 15,
+    color: '#FFFFFF',
+  },
+
+  employmentOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
+    gap: 5,
+    maxWidth: '70%',
+  },
+
+  employmentButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderWidth: 1,
+    borderColor: '#D9D9D5',
+    borderRadius: 6,
+    backgroundColor: '#FAFAF8',
+  },
+
+  employmentButtonSelected: {
+    backgroundColor: '#E8E8E4',
+    borderColor: '#BDBDB7',
+  },
+
+  employmentButtonText: {
+    fontSize: 11,
+    color: '#666660',
+  },
+
+  employmentButtonTextSelected: {
+    fontWeight: '600',
+    color: '#181816',
+  },
+
   notesSection: {
-    marginTop: 24,
-    paddingTop: 20,
-    borderTopWidth: 1,
+    marginBottom: 24,
     borderTopColor: '#E8E8E4',
   },
 
-  notesText: {
+  notesInput: {
+    minHeight: 110,
+    paddingHorizontal: 11,
+    paddingTop: 10,
+    paddingBottom: 10,
+    borderWidth: 1,
+    borderColor: '#D9D9D5',
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    color: '#181816',
     fontSize: 13,
-    lineHeight: 20,
-    color: '#555550',
+    lineHeight: 19,
   },
 
   timelineSection: {
-    marginTop: 24,
     paddingTop: 20,
     borderTopWidth: 1,
     borderTopColor: '#E8E8E4',
@@ -657,6 +751,46 @@ const styles = StyleSheet.create({
     color: '#666660',
   },
 
+  deleteLink: {
+    alignSelf: 'flex-start',
+    marginTop: 24,
+  },
+
+  deleteLinkText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#A33A32',
+  },
+
+  deleteConfirmation: {
+    marginTop: 24,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#D9B8B4',
+    borderRadius: 8,
+    backgroundColor: '#FAF1F0',
+  },
+
+  deleteTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#7D2E28',
+  },
+
+  deleteText: {
+    marginTop: 5,
+    fontSize: 12,
+    lineHeight: 18,
+    color: '#7D5A56',
+  },
+
+  deleteActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 8,
+    marginTop: 12,
+  },
+
   actions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
@@ -690,6 +824,19 @@ const styles = StyleSheet.create({
   },
 
   primaryButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+
+  deleteButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 8,
+    backgroundColor: '#A33A32',
+  },
+
+  deleteButtonText: {
     fontSize: 13,
     fontWeight: '600',
     color: '#FFFFFF',

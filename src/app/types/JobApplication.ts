@@ -11,7 +11,7 @@ export interface JobApplication {
   listingUrl?: string;
   listingSource: string;
   applicationSource: string;
-  appliedAt: string;
+  appliedAt?: string;
   status: ApplicationStatus;
   notes?: string;
   createdAt: string;

@@ -36,8 +36,7 @@ const SettingsContext = createContext<SettingsContextValue | null>(null);
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [timeFormat, setTimeFormatState] = useState<TimeFormat>('12h');
 
-  const [dateFormat, setDateFormatState] =
-    useState<DateFormat>('month_day_year');
+  const [dateFormat, setDateFormatState] = useState<DateFormat>('numeric_us');
 
   const [weekStart, setWeekStartState] = useState<WeekStart>('sunday');
 
@@ -49,12 +48,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     });
 
     AsyncStorage.getItem(DATE_FORMAT_KEY).then(value => {
-      if (
-        value === 'month_day_year' ||
-        value === 'day_month_year' ||
-        value === 'numeric_us' ||
-        value === 'numeric_international'
-      ) {
+      if (value === 'numeric_us' || value === 'numeric_international') {
         setDateFormatState(value);
       }
     });
