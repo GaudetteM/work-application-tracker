@@ -7,12 +7,14 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { ApplicationRow } from '../components/ApplicationRow';
+import { ApplicationRow } from '../components';
 import { AddApplicationModal } from './modals/AddApplicationModal';
 import { ApplicationDetailsModal } from './modals/ApplicationDetailsModal';
 import { useApplicationStore } from '../store/ApplicationStore';
+import { useTheme } from '../theme/ThemeProvider';
 
 export function ApplicationsScreen() {
+  const { theme } = useTheme();
   const applications = useApplicationStore(state => state.applications);
 
   const events = useApplicationStore(state => state.events);
@@ -50,16 +52,38 @@ export function ApplicationsScreen() {
     null;
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme.background,
+        },
+      ]}
+    >
       <View style={styles.header}>
         <View>
-          <Text style={styles.eyebrow}>WORK SEARCH</Text>
+          <Text style={[styles.eyebrow, { color: theme.text }]}>
+            WORK SEARCH
+          </Text>
 
-          <Text style={styles.title}>Applications</Text>
+          <Text style={[styles.title, { color: theme.text }]}>
+            Applications
+          </Text>
         </View>
 
-        <Pressable onPress={() => setShowAdd(true)} style={styles.addButton}>
-          <Text style={styles.addButtonText}>+ Add Application</Text>
+        <Pressable
+          onPress={() => setShowAdd(true)}
+          style={[
+            styles.addButton,
+            {
+              backgroundColor: theme.surface,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <Text style={[styles.addButtonText, { color: theme.text }]}>
+            + Add Application
+          </Text>
         </Pressable>
       </View>
 
@@ -69,16 +93,28 @@ export function ApplicationsScreen() {
           onChangeText={setSearchQuery}
           placeholder="Search applications..."
           placeholderTextColor="#999994"
-          style={styles.searchInput}
+          style={[
+            styles.searchInput,
+            {
+              color: theme.text,
+              borderColor: theme.text,
+            },
+          ]}
         />
       </View>
 
-      <View style={styles.listContainer}>
+      <View
+        style={[
+          styles.listContainer,
+          { backgroundColor: theme.background, borderColor: theme.background },
+        ]}
+      >
         <FlatList
           data={filteredApplications}
           keyExtractor={application => application.id}
-          renderItem={({ item }) => (
+          renderItem={({ item, index }) => (
             <ApplicationRow
+              index={index}
               application={item}
               onPress={() => setSelectedApplication(item.id)}
             />
@@ -155,6 +191,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 8,
+    borderWidth: 1,
     backgroundColor: '#181816',
   },
 

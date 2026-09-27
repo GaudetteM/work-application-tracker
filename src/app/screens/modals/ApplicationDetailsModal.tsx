@@ -13,8 +13,8 @@ import type {
   ApplicationStatus,
   EmploymentType,
   JobApplication,
-} from '../../types/application';
-import { EmploymentTypeButton } from '../../components/EmploymentTypeButton';
+} from '../../types';
+import { EmploymentTypeButton } from '../../components';
 
 type ApplicationDetailsModalProps = {
   application: JobApplication;

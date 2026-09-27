@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
+import { useTheme } from '../theme/ThemeProvider';
 
 type EmploymentTypeButtonProps = {
   label: string;
@@ -12,12 +13,35 @@ export function EmploymentTypeButton({
   selected,
   onPress,
 }: EmploymentTypeButtonProps) {
+  const { theme } = useTheme();
+
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.button, selected && styles.buttonSelected]}
+      style={[
+        styles.button,
+        {
+          backgroundColor: theme.inputBackground,
+          borderColor: theme.borderStrong,
+        },
+        selected && {
+          backgroundColor: theme.border,
+          borderColor: theme.borderStrong,
+        },
+      ]}
     >
-      <Text style={[styles.text, selected && styles.textSelected]}>
+      <Text
+        style={[
+          styles.text,
+          {
+            color: theme.textSecondary,
+          },
+          selected && styles.selectedText,
+          selected && {
+            color: theme.text,
+          },
+        ]}
+      >
         {label}
       </Text>
     </Pressable>
@@ -29,24 +53,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 9,
     borderWidth: 1,
-    borderColor: '#D9D9D5',
     borderRadius: 8,
-    backgroundColor: '#FAFAF8',
-  },
-
-  buttonSelected: {
-    backgroundColor: '#E8E8E4',
-    borderColor: '#BDBDB7',
   },
 
   text: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#555550',
   },
 
-  textSelected: {
-    color: '#181816',
+  selectedText: {
     fontWeight: '600',
   },
 });

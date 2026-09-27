@@ -6,7 +6,7 @@ import type {
   ApplicationEvent,
   ApplicationStatus,
   JobApplication,
-} from '../types/application';
+} from '../types';
 
 type ApplicationStore = {
   applications: JobApplication[];

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { JobApplication, EmploymentType } from '../../types/application';
-import { EmploymentTypeButton } from '../../components/EmploymentTypeButton';
+import { JobApplication, EmploymentType } from '../../types';
+import { EmploymentTypeButton } from '../../components';
 
 const LISTING_SOURCES = [
   'LinkedIn',
@@ -45,17 +45,12 @@ export function AddApplicationModal({
   const [listingSourceOpen, setListingSourceOpen] = useState(false);
   const [applicationSourceOpen, setApplicationSourceOpen] = useState(false);
 
-  const save = () => {
-    if (!title.trim() || !company.trim()) {
-      return;
-    }
-
+  const save = (): void => {
     const now = new Date().toISOString();
-
     onSave({
       id: Date.now().toString(),
-      title: title.trim(),
-      company: company.trim(),
+      title: title.trim() === '' ? 'Senior Software Engineer' : title.trim(),
+      company: company.trim() === '' ? 'Company name' : company.trim(),
       employmentType,
       location: location.trim() || undefined,
       salary: salary.trim() || undefined,

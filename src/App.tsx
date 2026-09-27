@@ -2,14 +2,18 @@ import React, { useState } from 'react';
 
 import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 
-import { ApplicationsScreen } from './src/screens/ApplicationsScreen';
-import { DashboardScreen } from './src/screens/DashboardScreen';
-import { SettingsScreen } from './src/screens/SettingsScreen';
+import { ApplicationsScreen } from './app/screens/ApplicationsScreen';
+import { DashboardScreen } from './app/screens/DashboardScreen';
+import { SettingsScreen } from './app/screens/SettingsScreen';
+import { ThemeProvider, useTheme } from './app/theme/ThemeProvider';
+import { SettingsProvider } from './app/settings/SettingsProvider';
 
 type Screen = 'dashboard' | 'applications' | 'settings';
 
-function App(): React.JSX.Element {
+function AppContent(): React.JSX.Element {
   const [screen, setScreen] = useState<Screen>('dashboard');
+
+  const { theme } = useTheme();
 
   const renderScreen = () => {
     switch (screen) {
@@ -30,9 +34,33 @@ function App(): React.JSX.Element {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.sidebar}>
-        <Text style={styles.logo}>Work Tracker</Text>
+    <SafeAreaView
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme.background,
+        },
+      ]}
+    >
+      <View
+        style={[
+          styles.sidebar,
+          {
+            backgroundColor: theme.surfaceSecondary,
+            borderRightColor: theme.borderStrong,
+          },
+        ]}
+      >
+        <Text
+          style={[
+            styles.logo,
+            {
+              color: theme.text,
+            },
+          ]}
+        >
+          Work Tracker
+        </Text>
 
         <View style={styles.nav}>
           <NavItem
@@ -55,7 +83,16 @@ function App(): React.JSX.Element {
         </View>
       </View>
 
-      <View style={styles.content}>{renderScreen()}</View>
+      <View
+        style={[
+          styles.content,
+          {
+            backgroundColor: theme.background,
+          },
+        ]}
+      >
+        {renderScreen()}
+      </View>
     </SafeAreaView>
   );
 }
@@ -67,12 +104,27 @@ type NavItemProps = {
 };
 
 function NavItem({ label, active, onPress }: NavItemProps) {
+  const { theme } = useTheme();
+
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.navItem, active && styles.navItemActive]}
+      style={[
+        styles.navItem,
+        active && {
+          backgroundColor: theme.border,
+        },
+      ]}
     >
-      <Text style={[styles.navText, active && styles.navTextActive]}>
+      <Text
+        style={[
+          styles.navText,
+          {
+            color: active ? theme.text : theme.textSecondary,
+            fontWeight: active ? '600' : '400',
+          },
+        ]}
+      >
         {label}
       </Text>
     </Pressable>
@@ -83,22 +135,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: '#F7F7F5',
   },
 
   sidebar: {
     width: 220,
     padding: 24,
     borderRightWidth: StyleSheet.hairlineWidth,
-    borderRightColor: '#D9D9D6',
-    backgroundColor: '#F1F1EF',
   },
 
   logo: {
     marginBottom: 32,
     fontSize: 17,
     fontWeight: '700',
-    color: '#171717',
   },
 
   nav: {
@@ -111,18 +159,8 @@ const styles = StyleSheet.create({
     borderRadius: 7,
   },
 
-  navItemActive: {
-    backgroundColor: '#E3E3E0',
-  },
-
   navText: {
     fontSize: 14,
-    color: '#666',
-  },
-
-  navTextActive: {
-    color: '#171717',
-    fontWeight: '600',
   },
 
   content: {
@@ -131,4 +169,12 @@ const styles = StyleSheet.create({
   },
 });
 
-export default App;
+export default function App(): React.JSX.Element {
+  return (
+    <ThemeProvider>
+      <SettingsProvider>
+        <AppContent />
+      </SettingsProvider>
+    </ThemeProvider>
+  );
+}
