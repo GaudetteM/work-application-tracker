@@ -1,8 +1,8 @@
 import React from 'react';
 import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useSettings } from '../settings/SettingsProvider';
-import { useTheme } from '../theme/ThemeProvider';
-import { Theme } from '../theme/theme';
+import { useSettings } from '../../shared/settings/SettingsProvider';
+import { useTheme } from '../../shared/theme/ThemeProvider';
+import { Theme } from '../../shared/theme/theme';
 import { OptionButton } from '../components';
 
 export function SettingsScreen() {

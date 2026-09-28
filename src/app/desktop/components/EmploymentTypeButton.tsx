@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
-import { useTheme } from '../theme/ThemeProvider';
+import { useTheme } from '../../shared/theme/ThemeProvider';
 
 type EmploymentTypeButtonProps = {
   label: string;

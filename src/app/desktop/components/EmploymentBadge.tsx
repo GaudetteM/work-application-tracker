@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { EmploymentType } from '../types';
-import { useTheme } from '../theme/ThemeProvider';
+import { EmploymentType } from '../../shared/types';
+import { useTheme } from '../../shared/theme/ThemeProvider';
 
 type EmploymentBadgeProps = {
   employmentType: EmploymentType;

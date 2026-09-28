@@ -1,8 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { JobApplication } from '../types';
-import { formatStatus } from '../utils/applicationFormatter';
-import { useTheme } from '../theme/ThemeProvider';
-import { useDateFormatter } from '../utils/useDateFormatter';
+import { JobApplication } from '../../shared/types';
+import { formatStatus } from '../../shared/utils/applicationFormatter';
+import { useTheme } from '../../shared/theme/ThemeProvider';
+import { useDateFormatter } from '../../shared/utils/useDateFormatter';
 
 export function ApplicationSummary({
   application,

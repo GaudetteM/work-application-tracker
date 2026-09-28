@@ -11,7 +11,7 @@ import type {
   ApplicationEvent,
   ApplicationStatus,
   JobApplication,
-} from '../../types';
+} from '../../../shared/types';
 
 type ApplicationDetailsModalProps = {
   application: JobApplication;

@@ -1,11 +1,11 @@
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useTheme } from '../theme/ThemeProvider';
-import { useApplicationStore } from '../store/ApplicationStore';
-import type { ApplicationStatus, JobApplication } from '../types';
-import { useDateFormatter } from '../utils/useDateFormatter';
-import { useSettings } from '../settings/SettingsProvider';
-import { getStartOfWeek } from '../utils/dateFormatter';
+import { useTheme } from '../../shared/theme/ThemeProvider';
+import { useApplicationStore } from '../../shared/store/ApplicationStore';
+import type { ApplicationStatus, JobApplication } from '../../shared/types';
+import { useDateFormatter } from '../../shared/utils/useDateFormatter';
+import { useSettings } from '../../shared/settings/SettingsProvider';
+import { getStartOfWeek } from '../../shared/utils/dateFormatter';
 import { ApplicationSummary, StatusRow } from '../components';
 
 type DashboardScreenProps = {

@@ -1,9 +1,9 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useTheme } from '../theme/ThemeProvider';
-import type { JobApplication } from '../types';
+import { useTheme } from '../../shared/theme/ThemeProvider';
+import type { JobApplication } from '../../shared/types';
 import { EmploymentBadge } from './EmploymentBadge';
-import { useDateFormatter } from '../utils/useDateFormatter';
+import { useDateFormatter } from '../../shared/utils/useDateFormatter';
 
 type ApplicationRowProps = {
   application: JobApplication;

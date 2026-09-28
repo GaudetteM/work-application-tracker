@@ -10,8 +10,8 @@ import {
 import { ApplicationRow } from '../components';
 import { AddApplicationModal } from './modals/AddApplicationModal';
 import { ApplicationDetailsModal } from './modals/ApplicationDetailsModal';
-import { useApplicationStore } from '../store/ApplicationStore';
-import { useTheme } from '../theme/ThemeProvider';
+import { useApplicationStore } from '../../shared/store/ApplicationStore';
+import { useTheme } from '../../shared/theme/ThemeProvider';
 
 export function ApplicationsScreen() {
   const { theme } = useTheme();

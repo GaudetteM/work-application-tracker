@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useTheme } from '../theme/ThemeProvider';
+import { useTheme } from '../../shared/theme/ThemeProvider';
 
 type OptionButtonProps = {
   label: string;

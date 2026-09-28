@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../theme/ThemeProvider';
+import { useTheme } from '../../shared/theme/ThemeProvider';
 
 export function StatusRow({ label, count }: { label: string; count: number }) {
   const { theme } = useTheme();

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ApplicationsScreen } from './app/screens/ApplicationsScreen';
-import { DashboardScreen } from './app/screens/DashboardScreen';
-import { SettingsScreen } from './app/screens/SettingsScreen';
-import { ThemeProvider, useTheme } from './app/theme/ThemeProvider';
-import { SettingsProvider } from './app/settings/SettingsProvider';
+import { ApplicationsScreen } from './app/desktop/screens/ApplicationsScreen';
+import { DashboardScreen } from './app/desktop/screens/DashboardScreen';
+import { SettingsScreen } from './app/desktop/screens/SettingsScreen';
+import { ThemeProvider, useTheme } from './app/shared/theme/ThemeProvider';
+import { SettingsProvider } from './app/shared/settings/SettingsProvider';
 
 type Screen = 'dashboard' | 'applications' | 'settings';
 
