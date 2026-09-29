@@ -75,7 +75,7 @@ export function ApplicationsScreen({ navigation }: Props): React.JSX.Element {
         keyExtractor={application => application.id}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <ApplicationRow
             application={item}
             onPress={() => {
@@ -83,6 +83,7 @@ export function ApplicationsScreen({ navigation }: Props): React.JSX.Element {
                 applicationId: item.id,
               });
             }}
+            index={index}
           />
         )}
         ListEmptyComponent={

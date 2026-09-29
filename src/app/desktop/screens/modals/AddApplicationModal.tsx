@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { JobApplication, EmploymentType } from '../../../shared/types';
+import { useTheme } from '../../../shared/theme/ThemeProvider';
+import type { Theme } from '../../../shared/theme/theme';
 import { EmploymentTypeButton } from '../../components';
 
 const LISTING_SOURCES = [
@@ -32,6 +34,9 @@ export function AddApplicationModal({
   onClose,
   onSave,
 }: AddApplicationModalProps) {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+
   const [title, setTitle] = useState('');
   const [company, setCompany] = useState('');
   const [location, setLocation] = useState('');
@@ -45,15 +50,19 @@ export function AddApplicationModal({
   const [listingSourceOpen, setListingSourceOpen] = useState(false);
   const [applicationSourceOpen, setApplicationSourceOpen] = useState(false);
 
+  const canSave = title.trim() !== '' && company.trim() !== '';
+
   const save = (): void => {
+    if (!canSave) {
+      return;
+    }
+
     const now = new Date().toISOString();
 
-    console.log('SAVE LOCAL:', new Date(now).toString());
-    console.log('SAVE UTC:', now);
     onSave({
       id: Date.now().toString(),
-      title: title.trim() === '' ? 'Senior Software Engineer' : title.trim(),
-      company: company.trim() === '' ? 'Company name' : company.trim(),
+      title: title.trim(),
+      company: company.trim(),
       employmentType,
       location: location.trim() || undefined,
       salary: salary.trim() || undefined,
@@ -88,8 +97,8 @@ export function AddApplicationModal({
           autoFocus
           value={title}
           onChangeText={setTitle}
-          placeholder=""
-          placeholderTextColor="#999"
+          placeholder="Senior Software Engineer"
+          placeholderTextColor={theme.textMuted}
           style={styles.input}
         />
 
@@ -98,8 +107,8 @@ export function AddApplicationModal({
         <TextInput
           value={company}
           onChangeText={setCompany}
-          placeholder=""
-          placeholderTextColor="#999"
+          placeholder="Company name"
+          placeholderTextColor={theme.textMuted}
           style={styles.input}
         />
 
@@ -110,8 +119,8 @@ export function AddApplicationModal({
             <TextInput
               value={location}
               onChangeText={setLocation}
-              placeholder=""
-              placeholderTextColor="#999"
+              placeholder="Remote, Minneapolis, MN"
+              placeholderTextColor={theme.textMuted}
               style={styles.input}
             />
           </View>
@@ -122,8 +131,8 @@ export function AddApplicationModal({
             <TextInput
               value={salary}
               onChangeText={setSalary}
-              placeholder=""
-              placeholderTextColor="#999"
+              placeholder="$120k–$150k"
+              placeholderTextColor={theme.textMuted}
               style={styles.input}
             />
           </View>
@@ -248,7 +257,11 @@ export function AddApplicationModal({
             <Text style={styles.cancelText}>Cancel</Text>
           </Pressable>
 
-          <Pressable onPress={save} style={styles.saveButton}>
+          <Pressable
+            onPress={save}
+            disabled={!canSave}
+            style={[styles.saveButton, !canSave && styles.saveButtonDisabled]}
+          >
             <Text style={styles.saveText}>Add Application</Text>
           </Pressable>
         </View>
@@ -257,205 +270,187 @@ export function AddApplicationModal({
   );
 }
 
-const styles = StyleSheet.create({
-  modalOverlay: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.28)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  modal: {
-    width: 680,
-    maxWidth: '90%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    padding: 28,
-    borderWidth: 1,
-    borderColor: '#E3E3E0',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 12,
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    modalOverlay: {
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.28)',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
-    shadowOpacity: 0.12,
-    shadowRadius: 24,
-    elevation: 8,
-  },
 
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    marginBottom: 28,
-  },
+    modal: {
+      width: 680,
+      maxWidth: '90%',
+      backgroundColor: theme.surface,
+      borderRadius: 14,
+      padding: 28,
+      borderWidth: 1,
+      borderColor: theme.border,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 12,
+      },
+      shadowOpacity: 0.12,
+      shadowRadius: 24,
+      elevation: 8,
+    },
 
-  modalTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#181816',
-  },
+    modalHeader: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+      marginBottom: 28,
+    },
 
-  modalSubtitle: {
-    marginTop: 5,
-    fontSize: 14,
-    color: '#777772',
-  },
+    modalTitle: {
+      fontSize: 22,
+      fontWeight: '700',
+      color: theme.text,
+    },
 
-  close: {
-    fontSize: 26,
-    lineHeight: 26,
-    color: '#777772',
-  },
+    modalSubtitle: {
+      marginTop: 5,
+      fontSize: 14,
+      color: theme.textSecondary,
+    },
 
-  label: {
-    marginBottom: 7,
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#454540',
-  },
+    close: {
+      fontSize: 26,
+      lineHeight: 26,
+      color: theme.textSecondary,
+    },
 
-  input: {
-    height: 42,
-    paddingHorizontal: 12,
-    marginBottom: 18,
-    borderWidth: 1,
-    borderColor: '#D9D9D5',
-    borderRadius: 8,
-    backgroundColor: '#FAFAF8',
-    color: '#181816',
-    fontSize: 14,
-  },
+    label: {
+      marginBottom: 7,
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.text,
+    },
 
-  inputRow: {
-    flexDirection: 'row',
-    gap: 14,
-  },
+    input: {
+      height: 42,
+      paddingHorizontal: 12,
+      marginBottom: 18,
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: 8,
+      backgroundColor: theme.inputBackground,
+      color: theme.text,
+      fontSize: 14,
+    },
 
-  inputHalf: {
-    flex: 1,
-  },
+    inputRow: {
+      flexDirection: 'row',
+      gap: 14,
+    },
 
-  typeOptions: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 28,
-  },
+    inputHalf: {
+      flex: 1,
+    },
 
-  typeButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderWidth: 1,
-    borderColor: '#D9D9D5',
-    borderRadius: 8,
-    backgroundColor: '#FAFAF8',
-  },
+    typeOptions: {
+      flexDirection: 'row',
+      gap: 8,
+      marginBottom: 28,
+    },
 
-  typeButtonSelected: {
-    backgroundColor: '#E8E8E4',
-    borderColor: '#BDBDB7',
-  },
+    modalActions: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      alignItems: 'center',
+      gap: 10,
+      paddingTop: 4,
+    },
 
-  typeButtonText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#555550',
-  },
+    cancelButton: {
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      borderRadius: 8,
+    },
 
-  typeButtonTextSelected: {
-    color: '#181816',
-    fontWeight: '600',
-  },
+    cancelText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.textSecondary,
+    },
 
-  modalActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    gap: 10,
-    paddingTop: 4,
-  },
+    saveButton: {
+      paddingHorizontal: 18,
+      paddingVertical: 10,
+      borderRadius: 8,
+      backgroundColor: theme.accent,
+    },
 
-  cancelButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
+    saveButtonDisabled: {
+      opacity: 0.5,
+    },
 
-  cancelText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#666660',
-  },
+    saveText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.accentText,
+    },
 
-  saveButton: {
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: '#181816',
-  },
+    sourceSection: {
+      marginBottom: 18,
+    },
 
-  saveText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
+    sourceButton: {
+      height: 42,
+      paddingHorizontal: 12,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: 8,
+      backgroundColor: theme.inputBackground,
+    },
 
-  sourceSection: {
-    marginBottom: 18,
-  },
+    sourceButtonText: {
+      fontSize: 14,
+      color: theme.text,
+    },
 
-  sourceButton: {
-    height: 42,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: '#D9D9D5',
-    borderRadius: 8,
-    backgroundColor: '#FAFAF8',
-  },
+    sourceChevron: {
+      fontSize: 16,
+      color: theme.textSecondary,
+    },
 
-  sourceButtonText: {
-    fontSize: 14,
-    color: '#181816',
-  },
+    sourceOptions: {
+      marginTop: 4,
+      padding: 4,
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: 8,
+      backgroundColor: theme.surface,
+    },
 
-  sourceChevron: {
-    fontSize: 16,
-    color: '#777772',
-  },
+    sourceOption: {
+      paddingHorizontal: 10,
+      paddingVertical: 9,
+      borderRadius: 5,
+    },
 
-  sourceOptions: {
-    marginTop: 4,
-    padding: 4,
-    borderWidth: 1,
-    borderColor: '#D9D9D5',
-    borderRadius: 8,
-    backgroundColor: '#FFFFFF',
-  },
+    sourceOptionSelected: {
+      backgroundColor: theme.surfaceSecondary,
+    },
 
-  sourceOption: {
-    paddingHorizontal: 10,
-    paddingVertical: 9,
-    borderRadius: 5,
-  },
+    sourceOptionText: {
+      fontSize: 13,
+      color: theme.textSecondary,
+    },
 
-  sourceOptionSelected: {
-    backgroundColor: '#E8E8E4',
-  },
+    sourceOptionTextSelected: {
+      fontWeight: '600',
+      color: theme.text,
+    },
+  });
+}
 
-  sourceOptionText: {
-    fontSize: 13,
-    color: '#555550',
-  },
-
-  sourceOptionTextSelected: {
-    fontWeight: '600',
-    color: '#181816',
-  },
-});

@@ -67,11 +67,6 @@ export function ApplicationSummary({
 }
 
 const styles = StyleSheet.create({
-  progressFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-
   applicationRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -109,32 +104,5 @@ const styles = StyleSheet.create({
     marginTop: 3,
     fontSize: 11,
   },
-
-  activityItem: {
-    flexDirection: 'row',
-    paddingVertical: 9,
-  },
-
-  activityDot: {
-    width: 7,
-    height: 7,
-    marginTop: 5,
-    marginRight: 10,
-    borderRadius: 4,
-  },
-
-  activityContent: {
-    flex: 1,
-    minWidth: 0,
-  },
-
-  activityTitle: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-
-  activityApplication: {
-    marginTop: 2,
-    fontSize: 12,
-  },
 });
+

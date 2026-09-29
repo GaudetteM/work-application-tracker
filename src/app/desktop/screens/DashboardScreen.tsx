@@ -2,7 +2,10 @@ import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../../shared/theme/ThemeProvider';
 import { useApplicationStore } from '../../shared/store/ApplicationStore';
-import type { ApplicationStatus, JobApplication } from '../../shared/types';
+import {
+  formatStatus,
+  getStatusCounts,
+} from '../../shared/utils/applicationFormatter';
 import { useDateFormatter } from '../../shared/utils/useDateFormatter';
 import { useSettings } from '../../shared/settings/SettingsProvider';
 import { getStartOfWeek } from '../../shared/utils/dateFormatter';
@@ -28,22 +31,6 @@ export function DashboardScreen({ onViewApplications }: DashboardScreenProps) {
 
   const startOfWeek = getStartOfWeek(now, weekStart);
 
-  console.log('now:', now.toISOString());
-  console.log('weekStart setting:', weekStart);
-  console.log('startOfWeek:', startOfWeek.toISOString());
-
-  applications.forEach(application => {
-    const appliedAt = application.appliedAt
-      ? new Date(application.appliedAt)
-      : null;
-
-    console.log({
-      title: application.title,
-      appliedAt: application.appliedAt,
-      parsedAppliedAt: appliedAt ? appliedAt.toISOString() : null,
-      isThisWeek: appliedAt ? appliedAt >= startOfWeek : false,
-    });
-  });
   const applicationsThisWeek = applications.filter(
     application =>
       application.appliedAt && new Date(application.appliedAt) >= startOfWeek,
@@ -573,57 +560,6 @@ export function DashboardScreen({ onViewApplications }: DashboardScreenProps) {
   );
 }
 
-function getStatusCounts(
-  applications: JobApplication[],
-): Record<ApplicationStatus, number> {
-  return applications.reduce(
-    (counts, application) => {
-      counts[application.status] += 1;
-
-      return counts;
-    },
-    {
-      applied: 0,
-      recruiter_contact: 0,
-      interested: 0,
-      interview: 0,
-      offer: 0,
-      rejected: 0,
-      withdrawn: 0,
-      closed: 0,
-    } as Record<ApplicationStatus, number>,
-  );
-}
-
-function formatStatus(status: ApplicationStatus) {
-  switch (status) {
-    case 'interested':
-      return 'Interested';
-
-    case 'recruiter_contact':
-      return 'Recruiter Contact';
-
-    case 'interview':
-      return 'Interview';
-
-    case 'offer':
-      return 'Offer';
-
-    case 'rejected':
-      return 'Rejected';
-
-    case 'withdrawn':
-      return 'Withdrawn';
-
-    case 'closed':
-      return 'Closed';
-
-    case 'applied':
-    default:
-      return 'Applied';
-  }
-}
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -749,44 +685,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
 
-  applicationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    minHeight: 58,
-    borderBottomWidth: 1,
-  },
-
-  applicationMain: {
-    flex: 1,
-    minWidth: 0,
-    paddingRight: 16,
-  },
-
-  applicationTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-
-  applicationCompany: {
-    marginTop: 3,
-    fontSize: 12,
-  },
-
-  applicationMeta: {
-    alignItems: 'flex-end',
-  },
-
-  applicationStatus: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
-
-  applicationDate: {
-    marginTop: 3,
-    fontSize: 11,
-  },
-
   activityItem: {
     flexDirection: 'row',
     paddingVertical: 9,
@@ -818,23 +716,6 @@ const styles = StyleSheet.create({
   activityDate: {
     marginTop: 3,
     fontSize: 10,
-  },
-
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    minHeight: 34,
-    borderBottomWidth: 1,
-  },
-
-  statusLabel: {
-    fontSize: 12,
-  },
-
-  statusCount: {
-    fontSize: 12,
-    fontWeight: '600',
   },
 
   emptyState: {

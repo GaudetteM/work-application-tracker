@@ -12,12 +12,17 @@ import type {
   ApplicationStatus,
   JobApplication,
 } from '../../../shared/types';
+import { formatStatus } from '../../../shared/utils/applicationFormatter';
+import { useDateFormatter } from '../../../shared/utils/useDateFormatter';
+import { useTheme } from '../../../shared/theme/ThemeProvider';
+import type { Theme } from '../../../shared/theme/theme';
 
 type ApplicationDetailsModalProps = {
   application: JobApplication;
   events: ApplicationEvent[];
   onSave: (application: JobApplication) => void;
   onDelete: () => void;
+  onClose: () => void;
 };
 
 const STATUS_OPTIONS: {
@@ -37,16 +42,30 @@ const STATUS_OPTIONS: {
   { value: 'closed', label: 'Closed' },
 ];
 
-type EditingField = 'title' | 'company' | 'location' | 'salary' | null;
+type EditingField =
+  | 'title'
+  | 'company'
+  | 'location'
+  | 'salary'
+  | 'listingSource'
+  | 'applicationSource'
+  | 'appliedAt'
+  | null;
 
 export function ApplicationDetailsModal({
   application,
   events,
   onSave,
   onDelete,
+  onClose,
 }: ApplicationDetailsModalProps) {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+  const { formatDate } = useDateFormatter();
+
   const [draft, setDraft] = useState<JobApplication>(application);
   const [editingField, setEditingField] = useState<EditingField>(null);
+  const [appliedAtText, setAppliedAtText] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const updateDraft = <K extends keyof JobApplication>(
@@ -57,6 +76,32 @@ export function ApplicationDetailsModal({
       ...current,
       [field]: value,
     }));
+  };
+
+  const handleStatusChange = (status: ApplicationStatus) => {
+    setDraft(current => {
+      let appliedAt = current.appliedAt;
+
+      if (status === 'applied' && !appliedAt) {
+        appliedAt = new Date().toISOString();
+      }
+
+      if (status === 'interested') {
+        appliedAt = undefined;
+      }
+
+      return { ...current, status, appliedAt };
+    });
+  };
+
+  const finishEditingAppliedAt = () => {
+    const parsed = new Date(appliedAtText);
+
+    if (!Number.isNaN(parsed.getTime())) {
+      updateDraft('appliedAt', parsed.toISOString());
+    }
+
+    setEditingField(null);
   };
 
   const finishEditingField = () => {
@@ -79,8 +124,10 @@ export function ApplicationDetailsModal({
     setEditingField(null);
   };
 
-  const handleClose = () => {
-    if (!draft.title.trim() || !draft.company.trim()) {
+  const canSave = draft.title.trim() !== '' && draft.company.trim() !== '';
+
+  const handleSave = () => {
+    if (!canSave) {
       return;
     }
 
@@ -106,7 +153,7 @@ export function ApplicationDetailsModal({
             <Text style={styles.company}>{draft.company}</Text>
           </View>
 
-          <Pressable onPress={handleClose} style={styles.closeButton}>
+          <Pressable onPress={onClose} style={styles.closeButton}>
             <Text style={styles.closeButtonText}>×</Text>
           </Pressable>
         </View>
@@ -123,7 +170,7 @@ export function ApplicationDetailsModal({
               {STATUS_OPTIONS.map(option => (
                 <Pressable
                   key={option.value}
-                  onPress={() => updateDraft('status', option.value)}
+                  onPress={() => handleStatusChange(option.value)}
                   style={[
                     styles.statusOption,
                     option.value === draft.status &&
@@ -154,6 +201,8 @@ export function ApplicationDetailsModal({
               onPress={() => setEditingField('title')}
               onChangeText={value => updateDraft('title', value)}
               onDone={finishEditingField}
+              styles={styles}
+              theme={theme}
             />
 
             <EditableRow
@@ -163,6 +212,8 @@ export function ApplicationDetailsModal({
               onPress={() => setEditingField('company')}
               onChangeText={value => updateDraft('company', value)}
               onDone={finishEditingField}
+              styles={styles}
+              theme={theme}
             />
 
             <EditableRow
@@ -173,6 +224,8 @@ export function ApplicationDetailsModal({
               onPress={() => setEditingField('location')}
               onChangeText={value => updateDraft('location', value)}
               onDone={finishEditingField}
+              styles={styles}
+              theme={theme}
             />
 
             <EditableRow
@@ -183,6 +236,8 @@ export function ApplicationDetailsModal({
               onPress={() => setEditingField('salary')}
               onChangeText={value => updateDraft('salary', value)}
               onDone={finishEditingField}
+              styles={styles}
+              theme={theme}
             />
 
             <View style={styles.detailRow}>
@@ -193,43 +248,67 @@ export function ApplicationDetailsModal({
                   label="Full-time"
                   selected={draft.employmentType === 'full_time'}
                   onPress={() => updateDraft('employmentType', 'full_time')}
+                  styles={styles}
                 />
 
                 <EmploymentButton
                   label="Contract"
                   selected={draft.employmentType === 'contract'}
                   onPress={() => updateDraft('employmentType', 'contract')}
+                  styles={styles}
                 />
 
                 <EmploymentButton
                   label="Part-time"
                   selected={draft.employmentType === 'part_time'}
                   onPress={() => updateDraft('employmentType', 'part_time')}
+                  styles={styles}
                 />
               </View>
             </View>
 
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Found via</Text>
+            <EditableRow
+              label="Found via"
+              value={draft.listingSource}
+              editing={editingField === 'listingSource'}
+              onPress={() => setEditingField('listingSource')}
+              onChangeText={value => updateDraft('listingSource', value)}
+              onDone={finishEditingField}
+              styles={styles}
+              theme={theme}
+            />
 
-              <Text style={styles.detailValue}>{draft.listingSource}</Text>
-            </View>
+            {draft.status !== 'interested' ? (
+              <EditableRow
+                label="Applied through"
+                value={draft.applicationSource}
+                editing={editingField === 'applicationSource'}
+                onPress={() => setEditingField('applicationSource')}
+                onChangeText={value => updateDraft('applicationSource', value)}
+                onDone={finishEditingField}
+                styles={styles}
+                theme={theme}
+              />
+            ) : null}
 
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Applied through</Text>
-
-              <Text style={styles.detailValue}>{draft.applicationSource}</Text>
-            </View>
-
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Applied</Text>
-
-              <Text style={styles.detailValue}>
-                {draft.appliedAt
-                  ? new Date(draft.appliedAt).toLocaleDateString()
-                  : 'N/A'}
-              </Text>
-            </View>
+            {draft.appliedAt ? (
+              <EditableRow
+                label="Applied"
+                value={
+                  editingField === 'appliedAt'
+                    ? appliedAtText
+                    : formatDate(draft.appliedAt)
+                }
+                editing={editingField === 'appliedAt'}
+                onPress={() => {
+                  setAppliedAtText(formatDate(draft.appliedAt as string));
+                  setEditingField('appliedAt');
+                }}
+                onChangeText={setAppliedAtText}
+                onDone={finishEditingAppliedAt}
+                styles={styles}
+                theme={theme}
+              />            ) : null}
           </View>
 
           <View style={styles.notesSection}>
@@ -240,7 +319,7 @@ export function ApplicationDetailsModal({
               onChangeText={value => updateDraft('notes', value)}
               style={styles.notesInput}
               placeholder="Company research, impressions, interview notes..."
-              placeholderTextColor="#999994"
+              placeholderTextColor={theme.textMuted}
               multiline
               textAlignVertical="top"
             />
@@ -316,8 +395,16 @@ export function ApplicationDetailsModal({
           )}
 
           <View style={styles.actions}>
-            <Pressable onPress={handleClose} style={styles.primaryButton}>
-              <Text style={styles.primaryButtonText}>Close</Text>
+            <Pressable onPress={onClose} style={styles.secondaryButton}>
+              <Text style={styles.secondaryButtonText}>Cancel</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={handleSave}
+              disabled={!canSave}
+              style={[styles.primaryButton, !canSave && styles.primaryButtonDisabled]}
+            >
+              <Text style={styles.primaryButtonText}>Save</Text>
             </Pressable>
           </View>
         </ScrollView>
@@ -334,6 +421,8 @@ type EditableRowProps = {
   onPress: () => void;
   onChangeText: (value: string) => void;
   onDone: () => void;
+  styles: ReturnType<typeof createStyles>;
+  theme: Theme;
 };
 
 function EditableRow({
@@ -344,6 +433,8 @@ function EditableRow({
   onPress,
   onChangeText,
   onDone,
+  styles,
+  theme,
 }: EditableRowProps) {
   return (
     <View style={styles.detailRow}>
@@ -357,7 +448,7 @@ function EditableRow({
             onChangeText={onChangeText}
             style={styles.inlineInput}
             placeholder={placeholder}
-            placeholderTextColor="#999994"
+            placeholderTextColor={theme.textMuted}
             onSubmitEditing={onDone}
           />
 
@@ -382,9 +473,15 @@ type EmploymentButtonProps = {
   label: string;
   selected: boolean;
   onPress: () => void;
+  styles: ReturnType<typeof createStyles>;
 };
 
-function EmploymentButton({ label, selected, onPress }: EmploymentButtonProps) {
+function EmploymentButton({
+  label,
+  selected,
+  onPress,
+  styles,
+}: EmploymentButtonProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -405,440 +502,421 @@ function EmploymentButton({ label, selected, onPress }: EmploymentButtonProps) {
   );
 }
 
-function formatStatus(status: ApplicationStatus) {
-  switch (status) {
-    case 'recruiter_contact':
-      return 'Recruiter Contact';
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    overlay: {
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'rgba(0, 0, 0, 0.25)',
+    },
 
-    case 'interview':
-      return 'Interview';
+    modal: {
+      width: 680,
+      maxHeight: '88%',
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: 12,
+      backgroundColor: theme.surface,
+      shadowColor: '#000000',
+      shadowOffset: {
+        width: 0,
+        height: 8,
+      },
+      shadowOpacity: 0.15,
+      shadowRadius: 20,
+    },
 
-    case 'offer':
-      return 'Offer';
+    header: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+      paddingHorizontal: 24,
+      paddingTop: 22,
+      paddingBottom: 18,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+    },
 
-    case 'rejected':
-      return 'Rejected';
+    headerText: {
+      flex: 1,
+      minWidth: 0,
+    },
 
-    case 'withdrawn':
-      return 'Withdrawn';
+    eyebrow: {
+      fontSize: 10,
+      fontWeight: '700',
+      letterSpacing: 1.2,
+      color: theme.textMuted,
+    },
 
-    case 'closed':
-      return 'Closed';
+    title: {
+      marginTop: 4,
+      fontSize: 21,
+      fontWeight: '700',
+      color: theme.text,
+    },
 
-    case 'applied':
-    default:
-      return 'Applied';
-  }
+    company: {
+      marginTop: 4,
+      fontSize: 13,
+      color: theme.textSecondary,
+    },
+
+    closeButton: {
+      width: 32,
+      height: 32,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginLeft: 16,
+      borderRadius: 7,
+      backgroundColor: theme.surfaceSecondary,
+    },
+
+    closeButtonText: {
+      marginTop: -2,
+      fontSize: 24,
+      fontWeight: '300',
+      color: theme.textSecondary,
+    },
+
+    content: {
+      flexGrow: 0,
+    },
+
+    contentContainer: {
+      padding: 24,
+    },
+
+    sectionTitle: {
+      marginBottom: 12,
+      fontSize: 12,
+      fontWeight: '700',
+      letterSpacing: 0.3,
+      color: theme.textSecondary,
+    },
+
+    statusSection: {
+      marginBottom: 24,
+    },
+
+    statusOptions: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+
+    statusOption: {
+      paddingHorizontal: 11,
+      paddingVertical: 7,
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: 7,
+      backgroundColor: theme.inputBackground,
+    },
+
+    statusOptionSelected: {
+      backgroundColor: theme.surfaceSecondary,
+      borderColor: theme.borderStrong,
+    },
+
+    statusOptionText: {
+      fontSize: 12,
+      color: theme.textSecondary,
+    },
+
+    statusOptionTextSelected: {
+      fontWeight: '600',
+      color: theme.text,
+    },
+
+    detailsSection: {
+      marginBottom: 24,
+    },
+
+    detailRow: {
+      minHeight: 42,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+    },
+
+    detailLabel: {
+      flexShrink: 0,
+      fontSize: 12,
+      color: theme.textMuted,
+    },
+
+    detailValue: {
+      flex: 1,
+      fontSize: 14,
+      color: theme.text,
+      textAlign: 'right',
+    },
+
+    placeholderValue: {
+      color: theme.textFaint,
+    },
+
+    editableValue: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      gap: 8,
+      maxWidth: '70%',
+      paddingVertical: 6,
+      paddingLeft: 12,
+    },
+
+    editIndicator: {
+      marginLeft: 12,
+      fontSize: 18,
+      color: theme.textFaint,
+    },
+
+    inlineEdit: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      maxWidth: '70%',
+      gap: 6,
+    },
+
+    inlineInput: {
+      width: 260,
+      height: 34,
+      paddingHorizontal: 9,
+      borderWidth: 1,
+      borderColor: theme.borderStrong,
+      borderRadius: 7,
+      backgroundColor: theme.inputBackground,
+      color: theme.text,
+      fontSize: 13,
+    },
+
+    inlineDoneButton: {
+      width: 30,
+      height: 30,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 6,
+      backgroundColor: theme.accent,
+    },
+
+    inlineDoneText: {
+      fontSize: 15,
+      color: theme.accentText,
+    },
+
+    employmentOptions: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'flex-end',
+      gap: 5,
+      maxWidth: '70%',
+    },
+
+    employmentButton: {
+      paddingHorizontal: 8,
+      paddingVertical: 5,
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: 6,
+      backgroundColor: theme.inputBackground,
+    },
+
+    employmentButtonSelected: {
+      backgroundColor: theme.surfaceSecondary,
+      borderColor: theme.borderStrong,
+    },
+
+    employmentButtonText: {
+      fontSize: 11,
+      color: theme.textSecondary,
+    },
+
+    employmentButtonTextSelected: {
+      fontWeight: '600',
+      color: theme.text,
+    },
+
+    notesSection: {
+      marginBottom: 24,
+      borderTopColor: theme.border,
+    },
+
+    notesInput: {
+      minHeight: 110,
+      paddingHorizontal: 11,
+      paddingTop: 10,
+      paddingBottom: 10,
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: 8,
+      backgroundColor: theme.inputBackground,
+      color: theme.text,
+      fontSize: 13,
+      lineHeight: 19,
+    },
+
+    timelineSection: {
+      paddingTop: 20,
+      borderTopWidth: 1,
+      borderTopColor: theme.border,
+    },
+
+    timeline: {
+      marginTop: 4,
+    },
+
+    timelineItem: {
+      flexDirection: 'row',
+    },
+
+    timelineMarker: {
+      width: 20,
+      alignItems: 'center',
+    },
+
+    timelineDot: {
+      width: 8,
+      height: 8,
+      marginTop: 5,
+      borderRadius: 4,
+      backgroundColor: theme.textSecondary,
+    },
+
+    timelineLine: {
+      flex: 1,
+      width: 1,
+      marginTop: 4,
+      marginBottom: -4,
+      backgroundColor: theme.border,
+    },
+
+    timelineContent: {
+      flex: 1,
+      paddingLeft: 8,
+      paddingBottom: 18,
+    },
+
+    timelineStatus: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.text,
+    },
+
+    timelineDate: {
+      marginTop: 3,
+      fontSize: 12,
+      color: theme.textMuted,
+    },
+
+    timelineNote: {
+      marginTop: 5,
+      fontSize: 12,
+      color: theme.textSecondary,
+    },
+
+    deleteLink: {
+      alignSelf: 'flex-start',
+      marginTop: 24,
+    },
+
+    deleteLinkText: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: '#A33A32',
+    },
+
+    deleteConfirmation: {
+      marginTop: 24,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: '#D9B8B4',
+      borderRadius: 8,
+      backgroundColor: '#FAF1F0',
+    },
+
+    deleteTitle: {
+      fontSize: 13,
+      fontWeight: '700',
+      color: '#7D2E28',
+    },
+
+    deleteText: {
+      marginTop: 5,
+      fontSize: 12,
+      lineHeight: 18,
+      color: '#7D5A56',
+    },
+
+    deleteActions: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      gap: 8,
+      marginTop: 12,
+    },
+
+    actions: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      gap: 8,
+      marginTop: 24,
+      paddingTop: 18,
+      borderTopWidth: 1,
+      borderTopColor: theme.border,
+    },
+
+    secondaryButton: {
+      paddingHorizontal: 14,
+      paddingVertical: 9,
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: 8,
+      backgroundColor: theme.inputBackground,
+    },
+
+    secondaryButtonText: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.textSecondary,
+    },
+
+    primaryButton: {
+      paddingHorizontal: 14,
+      paddingVertical: 9,
+      borderRadius: 8,
+      backgroundColor: theme.accent,
+    },
+
+    primaryButtonDisabled: {
+      opacity: 0.5,
+    },
+
+    primaryButtonText: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.accentText,
+    },
+
+    deleteButton: {
+      paddingHorizontal: 14,
+      paddingVertical: 9,
+      borderRadius: 8,
+      backgroundColor: '#A33A32',
+    },
+
+    deleteButtonText: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: '#FFFFFF',
+    },
+  });
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.25)',
-  },
-
-  modal: {
-    width: 680,
-    maxHeight: '88%',
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#D9D9D5',
-    borderRadius: 12,
-    backgroundColor: '#F7F7F5',
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-  },
-
-  header: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingTop: 22,
-    paddingBottom: 18,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E3E3E0',
-  },
-
-  headerText: {
-    flex: 1,
-    minWidth: 0,
-  },
-
-  eyebrow: {
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 1.2,
-    color: '#999994',
-  },
-
-  title: {
-    marginTop: 4,
-    fontSize: 21,
-    fontWeight: '700',
-    color: '#181816',
-  },
-
-  company: {
-    marginTop: 4,
-    fontSize: 13,
-    color: '#666660',
-  },
-
-  closeButton: {
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 16,
-    borderRadius: 7,
-    backgroundColor: '#E8E8E4',
-  },
-
-  closeButtonText: {
-    marginTop: -2,
-    fontSize: 24,
-    fontWeight: '300',
-    color: '#555550',
-  },
-
-  content: {
-    flexGrow: 0,
-  },
-
-  contentContainer: {
-    padding: 24,
-  },
-
-  sectionTitle: {
-    marginBottom: 12,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-    color: '#555550',
-  },
-
-  statusSection: {
-    marginBottom: 24,
-  },
-
-  statusOptions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-
-  statusOption: {
-    paddingHorizontal: 11,
-    paddingVertical: 7,
-    borderWidth: 1,
-    borderColor: '#D9D9D5',
-    borderRadius: 7,
-    backgroundColor: '#FAFAF8',
-  },
-
-  statusOptionSelected: {
-    backgroundColor: '#E8E8E4',
-    borderColor: '#BDBDB7',
-  },
-
-  statusOptionText: {
-    fontSize: 12,
-    color: '#666660',
-  },
-
-  statusOptionTextSelected: {
-    fontWeight: '600',
-    color: '#181816',
-  },
-
-  detailsSection: {
-    marginBottom: 24,
-  },
-
-  detailRow: {
-    minHeight: 42,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E8E8E4',
-  },
-
-  detailLabel: {
-    flexShrink: 0,
-    fontSize: 12,
-    color: '#8A8A84',
-  },
-
-  detailValue: {
-    flex: 1,
-    fontSize: 14,
-    color: '#181816',
-    textAlign: 'right',
-  },
-
-  placeholderValue: {
-    color: '#A0A09A',
-  },
-
-  editableValue: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 8,
-    maxWidth: '70%',
-    paddingVertical: 6,
-    paddingLeft: 12,
-  },
-
-  editIndicator: {
-    marginLeft: 12,
-    fontSize: 18,
-    color: '#A0A09A',
-  },
-
-  inlineEdit: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    maxWidth: '70%',
-    gap: 6,
-  },
-
-  inlineInput: {
-    width: 260,
-    height: 34,
-    paddingHorizontal: 9,
-    borderWidth: 1,
-    borderColor: '#BDBDB7',
-    borderRadius: 7,
-    backgroundColor: '#FFFFFF',
-    color: '#181816',
-    fontSize: 13,
-  },
-
-  inlineDoneButton: {
-    width: 30,
-    height: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 6,
-    backgroundColor: '#181816',
-  },
-
-  inlineDoneText: {
-    fontSize: 15,
-    color: '#FFFFFF',
-  },
-
-  employmentOptions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-end',
-    gap: 5,
-    maxWidth: '70%',
-  },
-
-  employmentButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderWidth: 1,
-    borderColor: '#D9D9D5',
-    borderRadius: 6,
-    backgroundColor: '#FAFAF8',
-  },
-
-  employmentButtonSelected: {
-    backgroundColor: '#E8E8E4',
-    borderColor: '#BDBDB7',
-  },
-
-  employmentButtonText: {
-    fontSize: 11,
-    color: '#666660',
-  },
-
-  employmentButtonTextSelected: {
-    fontWeight: '600',
-    color: '#181816',
-  },
-
-  notesSection: {
-    marginBottom: 24,
-    borderTopColor: '#E8E8E4',
-  },
-
-  notesInput: {
-    minHeight: 110,
-    paddingHorizontal: 11,
-    paddingTop: 10,
-    paddingBottom: 10,
-    borderWidth: 1,
-    borderColor: '#D9D9D5',
-    borderRadius: 8,
-    backgroundColor: '#FFFFFF',
-    color: '#181816',
-    fontSize: 13,
-    lineHeight: 19,
-  },
-
-  timelineSection: {
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#E8E8E4',
-  },
-
-  timeline: {
-    marginTop: 4,
-  },
-
-  timelineItem: {
-    flexDirection: 'row',
-  },
-
-  timelineMarker: {
-    width: 20,
-    alignItems: 'center',
-  },
-
-  timelineDot: {
-    width: 8,
-    height: 8,
-    marginTop: 5,
-    borderRadius: 4,
-    backgroundColor: '#555550',
-  },
-
-  timelineLine: {
-    flex: 1,
-    width: 1,
-    marginTop: 4,
-    marginBottom: -4,
-    backgroundColor: '#D9D9D5',
-  },
-
-  timelineContent: {
-    flex: 1,
-    paddingLeft: 8,
-    paddingBottom: 18,
-  },
-
-  timelineStatus: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#252522',
-  },
-
-  timelineDate: {
-    marginTop: 3,
-    fontSize: 12,
-    color: '#8A8A84',
-  },
-
-  timelineNote: {
-    marginTop: 5,
-    fontSize: 12,
-    color: '#666660',
-  },
-
-  deleteLink: {
-    alignSelf: 'flex-start',
-    marginTop: 24,
-  },
-
-  deleteLinkText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#A33A32',
-  },
-
-  deleteConfirmation: {
-    marginTop: 24,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#D9B8B4',
-    borderRadius: 8,
-    backgroundColor: '#FAF1F0',
-  },
-
-  deleteTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#7D2E28',
-  },
-
-  deleteText: {
-    marginTop: 5,
-    fontSize: 12,
-    lineHeight: 18,
-    color: '#7D5A56',
-  },
-
-  deleteActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 8,
-    marginTop: 12,
-  },
-
-  actions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 8,
-    marginTop: 24,
-    paddingTop: 18,
-    borderTopWidth: 1,
-    borderTopColor: '#E8E8E4',
-  },
-
-  secondaryButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderWidth: 1,
-    borderColor: '#D9D9D5',
-    borderRadius: 8,
-    backgroundColor: '#FAFAF8',
-  },
-
-  secondaryButtonText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#555550',
-  },
-
-  primaryButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 8,
-    backgroundColor: '#181816',
-  },
-
-  primaryButtonText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-
-  deleteButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 8,
-    backgroundColor: '#A33A32',
-  },
-
-  deleteButtonText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-});

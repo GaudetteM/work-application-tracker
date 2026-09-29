@@ -12,9 +12,11 @@ import { AddApplicationModal } from './modals/AddApplicationModal';
 import { ApplicationDetailsModal } from './modals/ApplicationDetailsModal';
 import { useApplicationStore } from '../../shared/store/ApplicationStore';
 import { useTheme } from '../../shared/theme/ThemeProvider';
+import type { Theme } from '../../shared/theme/theme';
 
 export function ApplicationsScreen() {
   const { theme } = useTheme();
+  const styles = createStyles(theme);
   const applications = useApplicationStore(state => state.applications);
 
   const events = useApplicationStore(state => state.events);
@@ -52,67 +54,31 @@ export function ApplicationsScreen() {
     null;
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: theme.background,
-        },
-      ]}
-    >
+    <View style={styles.container}>
       <View style={styles.header}>
         <View>
-          <Text style={[styles.eyebrow, { color: theme.text }]}>
-            WORK SEARCH
-          </Text>
+          <Text style={styles.eyebrow}>WORK SEARCH</Text>
 
-          <Text style={[styles.title, { color: theme.text }]}>
-            Applications
-          </Text>
+          <Text style={styles.title}>Applications</Text>
         </View>
 
-        <Pressable
-          onPress={() => setShowAdd(true)}
-          style={[
-            styles.addButton,
-            {
-              backgroundColor: theme.surface,
-              borderColor: theme.border,
-            },
-          ]}
-        >
-          <Text style={[styles.addButtonText, { color: theme.text }]}>
-            + Add Application
-          </Text>
+        <Pressable onPress={() => setShowAdd(true)} style={styles.addButton}>
+          <Text style={styles.addButtonText}>+ Add Application</Text>
         </Pressable>
       </View>
 
       <View style={styles.searchContainer}>
-        <View style={styles.searchContainer}>
-          <TextInput
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholder="Search applications..."
-            placeholderTextColor={theme.textMuted}
-            editable={!showAdd && !selectedApplication}
-            style={[
-              styles.searchInput,
-              {
-                color: theme.text,
-                borderColor: theme.border,
-                backgroundColor: theme.inputBackground,
-              },
-            ]}
-          />
-        </View>
+        <TextInput
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="Search applications..."
+          placeholderTextColor={theme.textMuted}
+          editable={!showAdd && !selectedApplication}
+          style={styles.searchInput}
+        />
       </View>
 
-      <View
-        style={[
-          styles.listContainer,
-          { backgroundColor: theme.background, borderColor: theme.background },
-        ]}
-      >
+      <View style={styles.listContainer}>
         <FlatList
           data={filteredApplications}
           keyExtractor={application => application.id}
@@ -159,95 +125,104 @@ export function ApplicationsScreen() {
             deleteApplication(selected.id);
             setSelectedApplication(null);
           }}
+          onClose={() => setSelectedApplication(null)}
         />
       )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F7F7F5',
-  },
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
 
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 28,
-    paddingTop: 24,
-    paddingBottom: 20,
-  },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 28,
+      paddingTop: 24,
+      paddingBottom: 20,
+    },
 
-  eyebrow: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1.2,
-    color: '#999994',
-  },
+    eyebrow: {
+      fontSize: 11,
+      fontWeight: '700',
+      letterSpacing: 1.2,
+      color: theme.text,
+    },
 
-  title: {
-    marginTop: 4,
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#181816',
-  },
+    title: {
+      marginTop: 4,
+      fontSize: 28,
+      fontWeight: '700',
+      color: theme.text,
+    },
 
-  addButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-    borderWidth: 1,
-    backgroundColor: '#181816',
-  },
+    addButton: {
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      borderRadius: 8,
+      borderWidth: 1,
+      backgroundColor: theme.surface,
+      borderColor: theme.border,
+    },
 
-  addButtonText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
+    addButtonText: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.text,
+    },
 
-  searchContainer: {
-    paddingHorizontal: 8,
-    paddingBottom: 18,
-  },
+    searchContainer: {
+      paddingHorizontal: 8,
+      paddingBottom: 18,
+    },
 
-  searchInput: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    fontSize: 18,
-  },
+    searchInput: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderWidth: 1,
+      borderRadius: 8,
+      fontSize: 18,
+      color: theme.text,
+      borderColor: theme.border,
+      backgroundColor: theme.inputBackground,
+    },
 
-  listContainer: {
-    flex: 1,
-    marginHorizontal: 14,
-    marginBottom: 14,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#E3E3E0',
-    borderRadius: 10,
-    backgroundColor: '#F7F7F5',
-  },
+    listContainer: {
+      flex: 1,
+      marginHorizontal: 14,
+      marginBottom: 14,
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: 10,
+      backgroundColor: theme.background,
+    },
 
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 80,
-    paddingHorizontal: 24,
-  },
+    emptyState: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 80,
+      paddingHorizontal: 24,
+    },
 
-  emptyTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#20201D',
-  },
+    emptyTitle: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: theme.text,
+    },
 
-  emptyText: {
-    marginTop: 6,
-    fontSize: 13,
-    color: '#8A8A84',
-    textAlign: 'center',
-  },
-});
+    emptyText: {
+      marginTop: 6,
+      fontSize: 13,
+      color: theme.textMuted,
+      textAlign: 'center',
+    },
+  });
+}
+

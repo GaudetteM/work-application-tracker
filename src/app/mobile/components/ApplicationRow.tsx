@@ -1,112 +1,227 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../../shared/theme/ThemeProvider';
-import { useDateFormatter } from '../../shared/utils/useDateFormatter';
 import type { JobApplication } from '../../shared/types';
+import { formatStatus } from '../../shared/utils/applicationFormatter';
 import { EmploymentBadge } from './EmploymentBadge';
+import { useDateFormatter } from '../../shared/utils/useDateFormatter';
 
 type ApplicationRowProps = {
   application: JobApplication;
   onPress: () => void;
+  index: number;
 };
 
 export function ApplicationRow({
   application,
   onPress,
-}: ApplicationRowProps): React.JSX.Element {
+  index,
+}: ApplicationRowProps) {
   const { theme } = useTheme();
   const { formatDate } = useDateFormatter();
 
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.card,
-        { borderColor: theme.border, backgroundColor: theme.surface },
-        pressed && { backgroundColor: theme.surfaceSecondary },
+      style={[
+        styles.row,
+        {
+          backgroundColor:
+            index % 2 === 0 ? theme.surfaceSecondary : theme.surface,
+          borderBottomColor: theme.border,
+        },
       ]}
     >
-      <View style={styles.header}>
-        <View style={styles.info}>
+      <View style={styles.main}>
+        <View style={styles.titleRow}>
           <Text
-            style={[styles.title, { color: theme.text }]}
-            numberOfLines={1}
+            style={[
+              styles.title,
+              {
+                color: theme.text,
+              },
+            ]}
           >
             {application.title}
           </Text>
+
+          <EmploymentBadge employmentType={application.employmentType} />
+        </View>
+
+        <Text
+          style={[
+            styles.company,
+            {
+              color: theme.textSecondary,
+            },
+          ]}
+        >
+          {application.company}
+        </Text>
+
+        <View style={styles.metaRow}>
           <Text
-            style={[styles.company, { color: theme.textSecondary }]}
-            numberOfLines={1}
+            style={[
+              styles.meta,
+              {
+                color: theme.textMuted,
+              },
+            ]}
           >
-            {application.company}
+            {application.listingSource}
+          </Text>
+
+          {application.listingSource !== '' &&
+            application.applicationSource !== '' && (
+              <Text
+                style={[
+                  styles.separator,
+                  {
+                    color: theme.textFaint,
+                  },
+                ]}
+              >
+                →
+              </Text>
+            )}
+          <Text
+            style={[
+              styles.meta,
+              {
+                color: theme.textMuted,
+              },
+            ]}
+          >
+            {application.applicationSource}
+          </Text>
+
+          <Text
+            style={[
+              styles.separator,
+              {
+                color: theme.textFaint,
+              },
+            ]}
+          >
+            ·
+          </Text>
+
+          <Text
+            style={[
+              styles.meta,
+              {
+                color: theme.textMuted,
+              },
+            ]}
+          >
+            {application.appliedAt ? formatDate(application.appliedAt) : 'N/A'}
           </Text>
         </View>
-        <Text style={[styles.chevron, { color: theme.textFaint }]}>›</Text>
       </View>
 
-      <View style={styles.metadata}>
-        <EmploymentBadge employmentType={application.employmentType} />
-        <View style={styles.spacer} />
-        <Text style={[styles.date, { color: theme.textMuted }]}>
-          {application.appliedAt
-            ? formatDate(application.appliedAt)
-            : 'Interested'}
-        </Text>
-      </View>
+      <View style={styles.right}>
+        {application.salary && (
+          <Text
+            style={[
+              styles.salary,
+              {
+                color: theme.textSecondary,
+              },
+            ]}
+          >
+            {application.salary}
+          </Text>
+        )}
 
-      {application.location ? (
-        <Text
-          style={[styles.location, { color: theme.textMuted }]}
-          numberOfLines={1}
+        <View
+          style={[
+            styles.status,
+            {
+              backgroundColor: theme.border,
+            },
+          ]}
         >
-          {application.location}
-        </Text>
-      ) : null}
+          <Text
+            style={[
+              styles.statusText,
+              {
+                color: theme.textSecondary,
+              },
+            ]}
+          >
+            {formatStatus(application.status)}
+          </Text>
+        </View>
+      </View>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    padding: 16,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderRadius: 10,
-  },
-  header: {
+  row: {
+    minHeight: 88,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
   },
-  info: {
+
+  main: {
     flex: 1,
     minWidth: 0,
   },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  company: {
-    marginTop: 3,
-    fontSize: 14,
-  },
-  chevron: {
-    marginLeft: 12,
-    fontSize: 24,
-    lineHeight: 24,
-  },
-  metadata: {
+
+  titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 14,
+    gap: 10,
   },
-  spacer: {
-    flex: 1,
+
+  title: {
+    fontSize: 15,
+    fontWeight: '600',
   },
-  date: {
+
+  company: {
+    marginTop: 5,
+    fontSize: 13,
+  },
+
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 9,
+  },
+
+  meta: {
     fontSize: 12,
   },
-  location: {
-    marginTop: 10,
+
+  separator: {
+    marginHorizontal: 7,
     fontSize: 12,
+  },
+
+  right: {
+    alignItems: 'flex-end',
+    marginLeft: 24,
+  },
+
+  salary: {
+    marginBottom: 7,
+    fontSize: 12,
+  },
+
+  status: {
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+
+  statusText: {
+    fontSize: 11,
+    fontWeight: '600',
   },
 });

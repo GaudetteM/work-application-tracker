@@ -2,13 +2,13 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../../shared/theme/ThemeProvider';
 import type { JobApplication } from '../../shared/types';
+import { formatStatus } from '../../shared/utils/applicationFormatter';
 import { EmploymentBadge } from './EmploymentBadge';
 import { useDateFormatter } from '../../shared/utils/useDateFormatter';
 
 type ApplicationRowProps = {
   application: JobApplication;
   onPress: () => void;
-  alternate?: boolean;
   index: number;
 };
 
@@ -71,17 +71,19 @@ export function ApplicationRow({
             {application.listingSource}
           </Text>
 
-          <Text
-            style={[
-              styles.separator,
-              {
-                color: theme.textFaint,
-              },
-            ]}
-          >
-            →
-          </Text>
-
+          {application.listingSource !== '' &&
+            application.applicationSource !== '' && (
+              <Text
+                style={[
+                  styles.separator,
+                  {
+                    color: theme.textFaint,
+                  },
+                ]}
+              >
+                →
+              </Text>
+            )}
           <Text
             style={[
               styles.meta,
@@ -153,35 +155,6 @@ export function ApplicationRow({
       </View>
     </Pressable>
   );
-}
-
-function formatStatus(status: JobApplication['status']) {
-  switch (status) {
-    case 'interested':
-      return 'Interested';
-
-    case 'recruiter_contact':
-      return 'Recruiter Contact';
-
-    case 'interview':
-      return 'Interview';
-
-    case 'offer':
-      return 'Offer';
-
-    case 'rejected':
-      return 'Rejected';
-
-    case 'withdrawn':
-      return 'Withdrawn';
-
-    case 'closed':
-      return 'Closed';
-
-    case 'applied':
-    default:
-      return 'Applied';
-  }
 }
 
 const styles = StyleSheet.create({
