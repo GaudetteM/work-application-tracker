@@ -4,3 +4,4 @@ export * from './EmploymentBadge';
 export * from './EmploymentTypeButton';
 export * from './OptionButton';
 export * from './StatusRow';
+export * from './Stepper';

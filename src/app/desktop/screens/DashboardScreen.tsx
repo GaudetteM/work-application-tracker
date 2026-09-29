@@ -15,8 +15,6 @@ type DashboardScreenProps = {
   onViewApplications: () => void;
 };
 
-const WEEKLY_GOAL = 5;
-
 export function DashboardScreen({ onViewApplications }: DashboardScreenProps) {
   const { theme } = useTheme();
   const { formatRelativeDate } = useDateFormatter();
@@ -27,7 +25,7 @@ export function DashboardScreen({ onViewApplications }: DashboardScreenProps) {
 
   const now = new Date();
 
-  const { weekStart } = useSettings();
+  const { weekStart, weeklyGoal } = useSettings();
 
   const startOfWeek = getStartOfWeek(now, weekStart);
 
@@ -35,7 +33,7 @@ export function DashboardScreen({ onViewApplications }: DashboardScreenProps) {
     application =>
       application.appliedAt && new Date(application.appliedAt) >= startOfWeek,
   );
-  const weeklyProgress = Math.min(applicationsThisWeek.length / WEEKLY_GOAL, 1);
+  const weeklyProgress = Math.min(applicationsThisWeek.length / weeklyGoal, 1);
 
   const recentApplications = [...applications]
     .sort(
@@ -310,7 +308,7 @@ export function DashboardScreen({ onViewApplications }: DashboardScreenProps) {
                       },
                     ]}
                   >
-                    {applicationsThisWeek.length} of {WEEKLY_GOAL} applications
+                    {applicationsThisWeek.length} of {weeklyGoal} applications
                   </Text>
                 </View>
 

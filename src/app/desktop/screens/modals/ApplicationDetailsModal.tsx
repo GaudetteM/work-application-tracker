@@ -61,7 +61,7 @@ export function ApplicationDetailsModal({
 }: ApplicationDetailsModalProps) {
   const { theme } = useTheme();
   const styles = createStyles(theme);
-  const { formatDate } = useDateFormatter();
+  const { formatDate, parseDateInput } = useDateFormatter();
 
   const [draft, setDraft] = useState<JobApplication>(application);
   const [editingField, setEditingField] = useState<EditingField>(null);
@@ -95,9 +95,9 @@ export function ApplicationDetailsModal({
   };
 
   const finishEditingAppliedAt = () => {
-    const parsed = new Date(appliedAtText);
+    const parsed = parseDateInput(appliedAtText);
 
-    if (!Number.isNaN(parsed.getTime())) {
+    if (parsed) {
       updateDraft('appliedAt', parsed.toISOString());
     }
 

@@ -7,6 +7,7 @@ import type {
   ApplicationStatus,
   JobApplication,
 } from '../types';
+import { generateMockApplications } from '../utils/mockData';
 
 type ApplicationStore = {
   applications: JobApplication[];
@@ -20,6 +21,7 @@ type ApplicationStore = {
   ) => void;
   changeStatus: (applicationId: string, status: ApplicationStatus) => void;
   deleteApplication: (applicationId: string) => void;
+  loadMockData: () => void;
 };
 
 export const useApplicationStore = create<ApplicationStore>()(
@@ -113,6 +115,16 @@ export const useApplicationStore = create<ApplicationStore>()(
             event => event.applicationId !== applicationId,
           ),
         })),
+
+      loadMockData: () =>
+        set(state => {
+          const mock = generateMockApplications();
+
+          return {
+            applications: [...mock.applications, ...state.applications],
+            events: [...mock.events, ...state.events],
+          };
+        }),
     }),
     {
       name: 'work-application-tracker',

@@ -8,6 +8,7 @@ import { useSettings } from '../../shared/settings/SettingsProvider';
 import { useTheme } from '../../shared/theme/ThemeProvider';
 import type { Theme } from '../../shared/theme/theme';
 import { getStartOfWeek } from '../../shared/utils/dateFormatter';
+import { getStatusCounts } from '../../shared/utils/applicationFormatter';
 import { useDateFormatter } from '../../shared/utils/useDateFormatter';
 import type { MobileStackParamList } from '../navigation/MobileNavigator';
 
@@ -26,7 +27,7 @@ export function DashboardScreen({ navigation }: Props): React.JSX.Element {
 
   const applications = useApplicationStore(state => state.applications);
 
-  const { weekStart } = useSettings();
+  const { weekStart, weeklyGoal } = useSettings();
   const { formatDate } = useDateFormatter();
 
   const now = new Date();
@@ -42,6 +43,13 @@ export function DashboardScreen({ navigation }: Props): React.JSX.Element {
     return appliedAt >= startOfWeek && appliedAt <= now;
   });
 
+  const statusCounts = getStatusCounts(applications);
+
+  const activeApplications = applications.filter(
+    application =>
+      !['rejected', 'withdrawn', 'closed'].includes(application.status),
+  ).length;
+
   const recentApplications = [...applications]
     .sort(
       (a, b) =>
@@ -49,7 +57,6 @@ export function DashboardScreen({ navigation }: Props): React.JSX.Element {
     )
     .slice(0, 5);
 
-  const weeklyGoal = 5;
   const progress = Math.min(currentWeekApplications.length / weeklyGoal, 1);
 
   return (
@@ -83,6 +90,23 @@ export function DashboardScreen({ navigation }: Props): React.JSX.Element {
                 },
               ]}
             />
+          </View>
+        </View>
+
+        <View style={styles.statsRow}>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>ACTIVE</Text>
+            <Text style={styles.statValue}>{activeApplications}</Text>
+          </View>
+
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>INTERVIEWS</Text>
+            <Text style={styles.statValue}>{statusCounts.interview}</Text>
+          </View>
+
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>OFFERS</Text>
+            <Text style={styles.statValue}>{statusCounts.offer}</Text>
           </View>
         </View>
 
@@ -192,6 +216,29 @@ function createStyles(theme: Theme) {
       height: 6,
       borderRadius: 3,
       backgroundColor: theme.accent,
+    },
+    statsRow: {
+      flexDirection: 'row',
+      gap: 10,
+      marginTop: 16,
+    },
+    statCard: {
+      flex: 1,
+      padding: 14,
+      borderRadius: 12,
+      backgroundColor: theme.surfaceSecondary,
+    },
+    statLabel: {
+      fontSize: 10,
+      fontWeight: '700',
+      letterSpacing: 0.8,
+      color: theme.textMuted,
+    },
+    statValue: {
+      marginTop: 6,
+      fontSize: 22,
+      fontWeight: '700',
+      color: theme.text,
     },
     addButton: {
       marginTop: 16,

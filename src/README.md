@@ -1,97 +1,103 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Work Application Tracker
 
-# Getting Started
+A cross-platform React Native app for tracking your job search — log applications, follow their status from "Interested" all the way to "Offer", and keep an eye on your weekly application goals. Runs natively on **iOS**, **Android**, and **macOS** from a single codebase.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## ✨ Features
 
-## Step 1: Start Metro
+- **Dashboard** — at-a-glance view of your weekly application goal progress, active applications, interviews, and offers, plus a feed of recent applications and activity.
+- **Applications list** — searchable list of every application, with employment type badges and applied dates.
+- **Application details** — inline-editable title, company, location, salary, status, "found via" / "applied through" sources, applied date, and freeform notes, with a full activity timeline.
+- **Add application** — quickly log a new application with employment type, listing/application source, and status.
+- **Status tracking** — Interested → Applied → Recruiter Contact → Interview → Offer (or Rejected / Withdrawn / Closed), with an activity log recording every status change.
+- **Configurable weekly goal** — set how many applications you're aiming to submit each week; the dashboard tracks your progress against it.
+- **Settings** — light/dark/system appearance, date format, time format, and week-start-day preferences, all persisted locally.
+- **Local-first storage** — everything is stored on-device (AsyncStorage), no account or backend required.
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## 📱 Screenshots
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+### Mobile (iOS / Android)
+
+| Dashboard | Applications | Application Details | Settings |
+| --- | --- | --- | --- |
+| ![Mobile dashboard](screenshots/mobile/dashboard.png) | ![Mobile applications list](screenshots/mobile/applications.png) | ![Mobile application details](screenshots/mobile/details.png) | ![Mobile settings](screenshots/mobile/settings.png) |
+
+### Desktop (macOS)
+
+| Dashboard | Applications | Application Details | Settings |
+| --- | --- | --- | --- |
+| ![Desktop dashboard](screenshots/desktop/dashboard.png) | ![Desktop applications list](screenshots/desktop/applications.png) | ![Desktop application details](screenshots/desktop/details.png) | ![Desktop settings](screenshots/desktop/settings.png) |
+
+## 🧱 Tech Stack
+
+- [React Native](https://reactnative.dev) 0.81 + [React Native macOS](https://microsoft.github.io/react-native-windows/docs/rnm-getting-started) for the desktop target
+- [React Navigation](https://reactnavigation.org) (bottom tabs + native stack) for mobile navigation
+- [Zustand](https://github.com/pmndrs/zustand) for application state, persisted via `@react-native-async-storage/async-storage`
+- TypeScript throughout
+
+## 📂 Project Structure
+
+```
+app/
+  desktop/    # macOS screens, modals, and components
+  mobile/     # iOS/Android screens, navigation, and components
+  shared/     # Cross-platform store, settings, theme, types, and utilities
+```
+
+Desktop and mobile each have their own screens/components tailored to the platform's UX conventions, but both share the same underlying store, settings, theming, and date/status formatting utilities.
+
+## 🚀 Getting Started
+
+> **Note**: Make sure you have completed the React Native [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+
+### 1. Install dependencies
 
 ```sh
-# Using npm
+npm install
+```
+
+### 2. Start Metro
+
+```sh
 npm start
-
-# OR using Yarn
-yarn start
 ```
 
-## Step 2: Build and run your app
+### 3. Run the app
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+With Metro running, open a new terminal window/pane from the root of the project:
 
-### Android
+**Android**
 
 ```sh
-# Using npm
 npm run android
-
-# OR using Yarn
-yarn android
 ```
 
-### iOS
+**iOS**
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+For iOS, install CocoaPods dependencies first (only needed on first clone or after updating native deps):
 
 ```sh
 bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
 bundle exec pod install
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+Then:
 
 ```sh
-# Using npm
 npm run ios
-
-# OR using Yarn
-yarn ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+**macOS**
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+```sh
+npm run macos
+```
 
-## Step 3: Modify your app
+## 🛠 Development
 
-Now that you have successfully run the app, let's make changes!
+- `npm run lint` — run ESLint
+- `npm test` — run the Jest test suite
+- In dev builds, the Settings screen includes a **Developer** section with a "Populate mock data" button to quickly seed the app with sample applications for testing/demos.
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+## 📄 License
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+Private project — not currently licensed for public use.

@@ -58,7 +58,7 @@ export function ApplicationDetailsScreen({
   const deleteApplication = useApplicationStore(
     state => state.deleteApplication,
   );
-  const { formatDate } = useDateFormatter();
+  const { formatDate, parseDateInput } = useDateFormatter();
   const [draft, setDraft] = useState<JobApplication | null>(
     application ?? null,
   );
@@ -103,8 +103,8 @@ export function ApplicationDetailsScreen({
     setEditingField(null);
   };
   const finishEditingAppliedAt = () => {
-    const parsed = new Date(appliedAtText);
-    if (!Number.isNaN(parsed.getTime())) {
+    const parsed = parseDateInput(appliedAtText);
+    if (parsed) {
       updateDraft('appliedAt', parsed.toISOString());
     }
     setEditingField(null);

@@ -22,14 +22,18 @@ type SettingsContextValue = {
   timeFormat: TimeFormat;
   dateFormat: DateFormat;
   weekStart: WeekStart;
+  weeklyGoal: number;
   setTimeFormat: (format: TimeFormat) => void;
   setDateFormat: (format: DateFormat) => void;
   setWeekStart: (day: WeekStart) => void;
+  setWeeklyGoal: (goal: number) => void;
 };
 
 const TIME_FORMAT_KEY = 'work-tracker-time-format';
 const DATE_FORMAT_KEY = 'work-tracker-date-format';
 const WEEK_START_KEY = 'work-tracker-week-start';
+const WEEKLY_GOAL_KEY = 'work-tracker-weekly-goal';
+const DEFAULT_WEEKLY_GOAL = 5;
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
 
@@ -39,6 +43,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [dateFormat, setDateFormatState] = useState<DateFormat>('numeric_us');
 
   const [weekStart, setWeekStartState] = useState<WeekStart>('sunday');
+
+  const [weeklyGoal, setWeeklyGoalState] = useState<number>(DEFAULT_WEEKLY_GOAL);
 
   useEffect(() => {
     AsyncStorage.getItem(TIME_FORMAT_KEY).then(value => {
@@ -58,6 +64,14 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         setWeekStartState(value);
       }
     });
+
+    AsyncStorage.getItem(WEEKLY_GOAL_KEY).then(value => {
+      const parsed = value ? Number.parseInt(value, 10) : NaN;
+
+      if (Number.isFinite(parsed) && parsed > 0) {
+        setWeeklyGoalState(parsed);
+      }
+    });
   }, []);
 
   const setTimeFormat = (format: TimeFormat) => {
@@ -75,16 +89,25 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     AsyncStorage.setItem(WEEK_START_KEY, day);
   };
 
+  const setWeeklyGoal = (goal: number) => {
+    const clamped = Math.max(1, Math.min(100, Math.round(goal)));
+
+    setWeeklyGoalState(clamped);
+    AsyncStorage.setItem(WEEKLY_GOAL_KEY, String(clamped));
+  };
+
   const value = useMemo(
     () => ({
       timeFormat,
       dateFormat,
       weekStart,
+      weeklyGoal,
       setTimeFormat,
       setDateFormat,
       setWeekStart,
+      setWeeklyGoal,
     }),
-    [timeFormat, dateFormat, weekStart],
+    [timeFormat, dateFormat, weekStart, weeklyGoal],
   );
 
   return (

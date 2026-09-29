@@ -4,6 +4,7 @@ import { useSettings } from '../settings/SettingsProvider';
 import {
   formatDate as formatDateValue,
   formatRelativeDate as formatRelativeDateValue,
+  parseDateInput as parseDateInputValue,
 } from './dateFormatter';
 
 export function useDateFormatter() {
@@ -23,8 +24,16 @@ export function useDateFormatter() {
     [dateFormat],
   );
 
+  const parseDateInput = useCallback(
+    (text: string) => {
+      return parseDateInputValue(text, dateFormat);
+    },
+    [dateFormat],
+  );
+
   return {
     formatDate,
     formatRelativeDate,
+    parseDateInput,
   };
 }

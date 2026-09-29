@@ -38,6 +38,55 @@ export function formatDate(value: string | Date, format: DateFormat): string {
   }
 }
 
+/**
+ * Parses text typed into a date-editing field back into a Date, interpreting
+ * ambiguous numeric input (e.g. "09/28/2026") according to the active
+ * dateFormat rather than relying on the JS engine's locale-dependent
+ * Date.parse, which varies between Hermes/JSC/V8 for non-ISO strings.
+ */
+export function parseDateInput(text: string, format: DateFormat): Date | null {
+  const trimmed = text.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  const numericMatch = trimmed.match(/^(\d{1,4})[/-](\d{1,2})[/-](\d{1,4})$/);
+
+  if (numericMatch) {
+    const [, a, b, c] = numericMatch;
+    let year: number;
+    let month: number;
+    let day: number;
+
+    if (a.length === 4) {
+      year = Number(a);
+      month = Number(b);
+      day = Number(c);
+    } else if (format === 'numeric_international' || format === 'day_month_year') {
+      day = Number(a);
+      month = Number(b);
+      year = Number(c);
+    } else {
+      month = Number(a);
+      day = Number(b);
+      year = Number(c);
+    }
+
+    const date = new Date(year, month - 1, day);
+
+    const isValid =
+      date.getFullYear() === year &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day;
+
+    return isValid ? date : null;
+  }
+
+  const fallback = new Date(trimmed);
+  return Number.isNaN(fallback.getTime()) ? null : fallback;
+}
+
 export function formatRelativeDate(
   value: string | Date,
   dateFormat: DateFormat,
