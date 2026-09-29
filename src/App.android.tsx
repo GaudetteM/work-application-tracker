@@ -1,10 +1,6 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import { MobileApp } from './app/mobile/MobileApp';
 
 export default function App(): React.JSX.Element {
-  return (
-    <View>
-      <Text>Work Tracker Android</Text>
-    </View>
-  );
+  return <MobileApp />;
 }

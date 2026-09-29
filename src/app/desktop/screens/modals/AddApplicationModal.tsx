@@ -88,7 +88,7 @@ export function AddApplicationModal({
           autoFocus
           value={title}
           onChangeText={setTitle}
-          placeholder="Senior Software Engineer"
+          placeholder=""
           placeholderTextColor="#999"
           style={styles.input}
         />
@@ -98,7 +98,7 @@ export function AddApplicationModal({
         <TextInput
           value={company}
           onChangeText={setCompany}
-          placeholder="Company name"
+          placeholder=""
           placeholderTextColor="#999"
           style={styles.input}
         />
@@ -110,7 +110,7 @@ export function AddApplicationModal({
             <TextInput
               value={location}
               onChangeText={setLocation}
-              placeholder="Remote"
+              placeholder=""
               placeholderTextColor="#999"
               style={styles.input}
             />
@@ -122,7 +122,7 @@ export function AddApplicationModal({
             <TextInput
               value={salary}
               onChangeText={setSalary}
-              placeholder="$120k–$150k"
+              placeholder=""
               placeholderTextColor="#999"
               style={styles.input}
             />

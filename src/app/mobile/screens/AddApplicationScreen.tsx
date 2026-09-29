@@ -7,7 +7,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 
@@ -16,6 +15,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useApplicationStore } from '../../shared/store/ApplicationStore';
 import { useTheme } from '../../shared/theme/ThemeProvider';
 import type { ApplicationStatus, EmploymentType } from '../../shared/types';
+import { Field, OptionGroup } from '../components';
 import type { MobileStackParamList } from '../navigation/MobileNavigator';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -110,32 +110,28 @@ export function AddApplicationScreen({ navigation }: Props): React.JSX.Element {
           label="Job title"
           value={title}
           onChangeText={setTitle}
-          placeholder="Senior Software Engineer"
-          styles={styles}
+          placeholder=""
         />
 
         <Field
           label="Company"
           value={company}
           onChangeText={setCompany}
-          placeholder="Company name"
-          styles={styles}
+          placeholder=""
         />
 
         <Field
           label="Location"
           value={location}
           onChangeText={setLocation}
-          placeholder="Remote, Minneapolis, MN"
-          styles={styles}
+          placeholder=""
         />
 
         <Field
           label="Salary"
           value={salary}
           onChangeText={setSalary}
-          placeholder="$120k–$140k"
-          styles={styles}
+          placeholder=""
         />
 
         <OptionGroup
@@ -156,7 +152,6 @@ export function AddApplicationScreen({ navigation }: Props): React.JSX.Element {
           ]}
           value={employmentType}
           onChange={value => setEmploymentType(value as EmploymentType)}
-          styles={styles}
         />
 
         <OptionGroup
@@ -173,7 +168,6 @@ export function AddApplicationScreen({ navigation }: Props): React.JSX.Element {
           ]}
           value={status}
           onChange={value => setStatus(value as ApplicationStatus)}
-          styles={styles}
         />
 
         <Field
@@ -181,16 +175,16 @@ export function AddApplicationScreen({ navigation }: Props): React.JSX.Element {
           value={listingSource}
           onChangeText={setListingSource}
           placeholder="LinkedIn"
-          styles={styles}
         />
 
-        <Field
-          label="Applied through"
-          value={applicationSource}
-          onChangeText={setApplicationSource}
-          placeholder="Company website"
-          styles={styles}
-        />
+        {status !== 'interested' ? (
+          <Field
+            label="Applied through"
+            value={applicationSource}
+            onChangeText={setApplicationSource}
+            placeholder="Company website"
+          />
+        ) : null}
 
         <Field
           label="Notes"
@@ -198,91 +192,9 @@ export function AddApplicationScreen({ navigation }: Props): React.JSX.Element {
           onChangeText={setNotes}
           placeholder="Anything worth remembering..."
           multiline
-          styles={styles}
         />
       </ScrollView>
     </KeyboardAvoidingView>
-  );
-}
-
-function Field({
-  label,
-  value,
-  onChangeText,
-  placeholder,
-  multiline = false,
-  styles,
-}: {
-  label: string;
-  value: string;
-  onChangeText: (value: string) => void;
-  placeholder: string;
-  multiline?: boolean;
-  styles: ReturnType<typeof createStyles>;
-}): React.JSX.Element {
-  return (
-    <View style={styles.field}>
-      <Text style={styles.label}>{label}</Text>
-
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={styles.placeholder.color}
-        multiline={multiline}
-        textAlignVertical={multiline ? 'top' : 'center'}
-        style={[styles.input, multiline ? styles.multilineInput : undefined]}
-      />
-    </View>
-  );
-}
-
-function OptionGroup({
-  label,
-  options,
-  value,
-  onChange,
-  styles,
-}: {
-  label: string;
-  options: Array<{
-    value: string;
-    label: string;
-  }>;
-  value: string;
-  onChange: (value: string) => void;
-  styles: ReturnType<typeof createStyles>;
-}): React.JSX.Element {
-  return (
-    <View style={styles.field}>
-      <Text style={styles.label}>{label}</Text>
-
-      <View style={styles.optionRow}>
-        {options.map(option => {
-          const selected = option.value === value;
-
-          return (
-            <Pressable
-              key={option.value}
-              onPress={() => onChange(option.value)}
-              style={[
-                styles.option,
-                selected ? styles.optionSelected : undefined,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.optionText,
-                  selected ? styles.optionTextSelected : undefined,
-                ]}
-              >
-                {option.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-    </View>
   );
 }
 
@@ -327,57 +239,6 @@ function createStyles(theme: ReturnType<typeof useTheme>['theme']) {
     content: {
       padding: 20,
       paddingBottom: 40,
-    },
-    field: {
-      marginBottom: 22,
-    },
-    label: {
-      marginBottom: 8,
-      fontSize: 14,
-      fontWeight: '600',
-      color: theme.text,
-    },
-    input: {
-      minHeight: 46,
-      paddingHorizontal: 12,
-      borderWidth: 1,
-      borderColor: theme.border,
-      borderRadius: 8,
-      backgroundColor: theme.inputBackground,
-      color: theme.text,
-      fontSize: 16,
-    },
-    placeholder: {
-      color: theme.textMuted,
-    },
-    multilineInput: {
-      minHeight: 120,
-      paddingTop: 12,
-    },
-    optionRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 8,
-    },
-    option: {
-      paddingHorizontal: 14,
-      paddingVertical: 10,
-      borderWidth: 1,
-      borderColor: theme.border,
-      borderRadius: 8,
-      backgroundColor: theme.surface,
-    },
-    optionSelected: {
-      borderColor: theme.accent,
-      backgroundColor: theme.accent,
-    },
-    optionText: {
-      fontSize: 14,
-      fontWeight: '500',
-      color: theme.textSecondary,
-    },
-    optionTextSelected: {
-      color: theme.accentText,
     },
   });
 }

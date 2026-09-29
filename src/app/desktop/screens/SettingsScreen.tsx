@@ -20,16 +20,7 @@ export function SettingsScreen() {
   const styles = createStyles(theme);
 
   const getSystemName = () => {
-    switch (Platform.OS) {
-      case 'ios':
-        return 'iOS';
-      case 'macos':
-        return 'macOS';
-      case 'android':
-        return 'Android';
-      default:
-        return 'system';
-    }
+    return Platform.OS === 'macos' ? 'macOS' : 'system';
   };
 
   return (
